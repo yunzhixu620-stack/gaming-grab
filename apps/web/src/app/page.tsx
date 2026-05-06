@@ -13,7 +13,7 @@ export default function Home() {
         {/* Phase Navigation Cards — placeholder */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
           {[
-            { phase: 1, title: "Discovery", status: "Coming" },
+            { phase: 1, title: "Discovery", status: "Ready" },
             { phase: 2, title: "Sentiment", status: "Coming" },
             { phase: 3, title: "Structure", status: "Coming" },
             { phase: 4, title: "Assets", status: "Coming" },
@@ -21,8 +21,11 @@ export default function Home() {
             <a
               key={item.phase}
               href={`/phase/${item.phase}`}
-              className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-4
-                         hover:border-neutral-700 transition-colors"
+              className={`rounded-lg border p-4 transition-colors ${
+                item.phase === 1
+                  ? "border-indigo-800/50 bg-indigo-950/20 hover:border-indigo-700"
+                  : "border-neutral-800 bg-neutral-900/50 hover:border-neutral-700"
+              }`}
             >
               <div className="text-xs text-neutral-500 font-mono">P{item.phase}</div>
               <div className="text-sm font-medium mt-1">{item.title}</div>
