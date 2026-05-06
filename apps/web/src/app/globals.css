@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+/* Cold gray / charcoal palette — minimal, professional */
+:root {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #141414;
+  --bg-card: #1a1a1a;
+  --border: #2a2a2a;
+  --text-primary: #e5e5e5;
+  --text-secondary: #a3a3a3;
+  --accent: #6366f1; /* indigo — neutral but distinctive */
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}

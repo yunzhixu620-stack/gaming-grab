@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Python venv
+venv/
+.venv/
+env/
+
+# Next.js
+.next/
+out/
+
+# Data (user projects + cache)
+data/projects/*
+data/cache/*
+!data/projects/.gitkeep
+!data/cache/.gitkeep
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Evolution drafts (can be local-only)
+evolution-drafts/pending/*
+evolution-drafts/approved/*
+evolution-drafts/rejected/*
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
