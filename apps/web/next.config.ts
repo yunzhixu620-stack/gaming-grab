@@ -1,14 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* Lightweight config — this machine has resource limits */
   reactStrictMode: true,
-  // Allow API proxy to backend in dev
+
+  // API proxy: dev → localhost, prod → cloud backend
   async rewrites() {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:8000/api/:path*",
+        destination: `${apiUrl}/api/:path*`,
       },
     ];
   },

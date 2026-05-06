@@ -28,10 +28,21 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS — allow Next.js dev server
+# CORS — allow dev + production frontend domains
+import os
+_cors_origins = [
+    "http://localhost:3000", "http://127.0.0.1:3000",
+    # Production: Vercel / Render / any cloud frontend
+]
+# Allow all origins in development; restrict in production
+if os.environ.get("ENV", "") == "production":
+    _cors_origins.extend(os.environ.get("FRONTEND_URLS", "").split(","))
+else:
+    _cors_origins.append("*")  # Dev: allow everything
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=_cors_origins if "*" not in _cors_origins else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

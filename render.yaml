@@ -1,0 +1,19 @@
+# Render.com deployment config for Gaming PM Agent API
+# Auto-deploys from GitHub master branch
+
+services:
+  - type: web
+    name: gaming-pm-api
+    runtime: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: ./apps/api
+    envVars:
+      - key: ENV
+        value: production
+      - key: PORT
+        value: "8000"
+    disk:
+      name: data
+      mountPath: /app/data
+      sizeGB: 1
+    plan: free
