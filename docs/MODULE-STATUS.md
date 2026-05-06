@@ -24,11 +24,11 @@
 | 字段 | 值 |
 |------|-----|
 | **模块ID** | `P1-DISCOVERY` |
-| **当前状态** | `NOT_STARTED` |
-| **当前版本** | `v0.0.0` |
+| **当前状态** | `STABLE` ✅ |
+| **当前版本** | `v0.1.0` |
 | **上一稳定版** | — |
 | **前端路径** | `apps/web/src/features/discovery/` |
-| **后端路径** | `apps/api/routers/discovery.py` → `services/scout_agent.py` → `crawlers/keyword_research.py` |
+| **后端路径** | `apps/api/routers/discovery.py` → `services/scout_agent.py` → `crawlers/keyword_research.py` + `crawlers/reddit_crawler.py` |
 | **数据输入** | 用户输入泛品类词 |
 | **数据输出** | `data/projects/{id}/phase1.json` → 细分品类候选池卡片 |
 | **依赖项** | 无（首个模块） |
@@ -38,6 +38,7 @@
 
 | 版本 | 日期 | 变更内容 | 状态标记 |
 |------|------|----------|----------|
+| v0.1.0 | 2026-05-06 | M1完成: Scout Agent + Google Autocomplete + Reddit JSON API + 前端卡片UI | STABLE |
 | v0.0.0 | — | 初始创建 | NOT_STARTED |
 
 ### 回退点
@@ -177,7 +178,7 @@
 | # | 里程碑 | 涉及模块 | 目标状态 | 完成日期 |
 |---|--------|----------|----------|----------|
 | M0 | 项目脚手架搭建完成 | API-CORE + WEB-CORE + SHARED-TYPES | ✅ STABLE | 2026-05-06 |
-| M1 | Phase 1 可用 | P1-DISCOVERY | STABLE | — |
+| M1 | Phase 1 可用 | P1-DISCOVERY | ✅ STABLE | 2026-05-06 |
 | M2 | Phase 1+2 可用 | P1 + P2 | STABLE | — |
 | M3 | 全流程可跑通 | P1-P4 | STABLE | — |
 | M4 | 国内数据源接入 | P1 + P2 爬虫扩展 | STABLE | — |
