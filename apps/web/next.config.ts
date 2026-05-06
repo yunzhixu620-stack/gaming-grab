@@ -21,8 +21,8 @@ const nextConfig: NextConfig = {
       }
     : {}),
 
-  // GitHub Pages base path (set via env or leave empty for root)
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || "",
+  // GitHub Pages base path — MUST match repo name for subpath deployment
+  basePath: "/gaming-grab",
 
   // Images: allow external images (for static export compatibility)
   images: { unoptimized: true },
