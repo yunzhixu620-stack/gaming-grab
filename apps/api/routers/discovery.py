@@ -1,12 +1,13 @@
 """
 Phase 1: Niche Discovery Router — REAL IMPLEMENTATION.
 Handles keyword research and niche category discovery.
+Supports both overseas (Reddit) and domestic (TapTap/XHS/BiliBili) data sources.
 Independent module — does not import from other routers.
 """
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Optional, List
 import os
 import json
 
@@ -24,8 +25,12 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "..", "data", "pr
 
 
 class SearchRequest(BaseModel):
-    query: str = Query(..., min_length=2, max_length=200, description="Broad game genre or keyword")
+    query: str = Field(..., min_length=2, max_length=200, description="Broad game genre or keyword")
     project_id: str = ""
+    sources: List[str] = Field(
+        default=["reddit"],
+        description="Data sources: reddit, taptap, xiaohongshu, bilibili (or all)"
+    )
 
 
 @router.get("/niches")
@@ -41,10 +46,22 @@ async def list_niche_candidates(project_id: str):
 async def search_niches(request: SearchRequest):
     """
     Search for niche categories based on a broad game genre/keyword.
-    This is the main Phase 1 entry point.
+    Supports multiple data sources via the 'sources' parameter.
+
+    Sources:
+    - reddit: Reddit JSON API (default, no auth needed)
+    - taptap: TapTap game community search
+    - xiaohongshu: Xiaohongshu (RED) note search
+    - bilibili: Bilibili video search
+    - all: All available sources
     """
     if not request.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty")
+
+    # Normalize sources list
+    sources = request.sources or ["reddit"]
+    if "all" in [s.lower() for s in sources]:
+        sources = ["reddit", "taptap", "xiaohongshu", "bilibili"]
 
     # Generate project_id if not provided
     pid = request.project_id or f"proj_{hash(request.query) % 10000:04d}"
@@ -54,10 +71,12 @@ async def search_niches(request: SearchRequest):
         result = await agent.discover_niches(
             query=request.query,
             project_id=pid,
+            sources=sources,
         )
         return {
             "project_id": result.project_id,
             "query": result.query,
+            "sources_used": sources,
             "candidates": [c.model_dump() for c in result.candidates],
             "generated_at": result.generated_at.isoformat(),
             "candidate_count": len(result.candidates),

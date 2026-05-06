@@ -112,10 +112,10 @@
 | 字段 | 值 |
 |------|-----|
 | **模块ID** | `P4-ASSET-GEN` |
-| **当前状态** | `NOT_STARTED` |
-| **当前版本** | `v0.0.0` |
+| **当前状态** | `STABLE` ✅ |
+| **当前版本** | `v0.1.0` |
 | **上一稳定版** | — |
-| **前端路径** | `apps/web/src/features/asset-gen/` |
+| **前端路径** | `apps/web/src/features/asset_gen/` |
 | **后端路径** | `apps/api/routers/asset_gen.py` → `services/asset_generator.py` |
 | **数据输入** | `phase3.json`（Feature Backlog） |
 | **数据输出** | `data/projects/{id}/phase4.json` → Elevator Pitch / Steam 描述 / Devlog |
@@ -181,8 +181,9 @@
 | M1 | Phase 1 可用 | P1-DISCOVERY | ✅ STABLE | 2026-05-06 |
 | M2 | Phase 1+2 可用 | P1 + P2 | ✅ STABLE | 2026-05-06 |
 | M3 | Phase 1-3 可用 | P1 + P2 + P3 | ✅ STABLE | 2026-05-06 |
-| M4 | 国内数据源接入 | P1 + P2 爬虫扩展 | STABLE | — |
-| M5 | 移动端 PWA 优化 | WEB + 全部前端 | STABLE | — |
+| M4 | Phase 1-4 全流程 | P1 + P2 + P3 + P4-ASSET-GEN | ✅ STABLE | 2026-05-06 |
+| M5 | 国内数据源接入 | P1 + P2 爬虫扩展 | STABLE | — |
+| M6 | 移动端 PWA 优化 | WEB + 全部前端 | STABLE | — |
 
 ---
 

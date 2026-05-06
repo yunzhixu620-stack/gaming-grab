@@ -20,6 +20,17 @@ if _sys_path not in sys.path:
     sys.path.insert(0, _sys_path)
 from crawlers.keyword_research import KeywordResearcher
 from crawlers.reddit_crawler import RedditCrawler
+# Domestic crawlers (optional, imported on demand)
+try:
+    from crawlers.domestic_crawlers import (
+        TaptapCrawler,
+        XiaohongshuCrawler,
+        BilibiliCrawler,
+        multi_platform_search as domestic_search,
+    )
+    DOMESTIC_AVAILABLE = True
+except ImportError:
+    DOMESTIC_AVAILABLE = False
 
 # Import shared models
 from models import NicheCandidate, Phase1Output
@@ -60,11 +71,16 @@ class ScoutAgent:
         self,
         query: str,
         project_id: str = "",
+        sources: list[str] | None = None,
     ) -> Phase1Output:
         """
         Full pipeline: keyword research → analyze → generate candidates.
+        Supports multiple data sources: reddit, taptap, xiaohongshu, bilibili.
         """
-        print(f"[ScoutAgent] Starting niche discovery for: {query}")
+        if sources is None:
+            sources = ["reddit"]
+
+        print(f"[ScoutAgent] Starting niche discovery for: {query} (sources: {sources})")
 
         # Step 1: Get keyword suggestions
         researcher = KeywordResearcher()
@@ -73,22 +89,37 @@ class ScoutAgent:
         finally:
             await researcher.close()
 
-        # Step 2: Search Reddit for context (optional, can run in parallel)
-        crawler = RedditCrawler()
-        try:
-            reddit_data = await crawler.multi_subreddit_search(
-                query, per_subreddit=5
-            )
-        except Exception as e:
-            print(f"[ScoutAgent] Reddit search failed (non-fatal): {e}")
-            reddit_data = {}
-        finally:
-            await crawler.close()
+        # Step 2a: Search Reddit if requested
+        reddit_data = {}
+        if "reddit" in sources:
+            crawler = RedditCrawler()
+            try:
+                reddit_data = await crawler.multi_subreddit_search(
+                    query, per_subreddit=5
+                )
+            except Exception as e:
+                print(f"[ScoutAgent] Reddit search failed (non-fatal): {e}")
+                reddit_data = {}
+            finally:
+                await crawler.close()
+
+        # Step 2b: Search domestic platforms if requested
+        domestic_data = {}
+        domestic_sources = [s for s in sources if s in ("taptap", "xiaohongshu", "bilibili")]
+        if domestic_sources and DOMESTIC_AVAILABLE:
+            try:
+                domestic_data = await domestic_search(query, platforms=domestic_sources, per_platform_limit=5)
+            except Exception as e:
+                print(f"[ScoutAgent] Domestic search failed (non-fatal): {e}")
 
         # Step 3: Analyze and extract niche candidates
         candidates = self._analyze_keyword_data(query, keyword_data, reddit_data)
 
-        # Step 4: Build output
+        # Step 4: Enrich with domestic data if available
+        if domestic_data:
+            candidates = self._enrich_with_domestic(candidates, domestic_data)
+
+        # Step 5: Build output
         output = Phase1Output(
             project_id=project_id,
             query=query,
@@ -96,7 +127,7 @@ class ScoutAgent:
             generated_at=datetime.now(),
         )
 
-        # Step 5: Save to file
+        # Step 6: Save to file
         if project_id:
             self._save_phase1_output(project_id, output)
 
@@ -229,6 +260,34 @@ class ScoutAgent:
 
             if matching_posts:
                 candidate.sources.append(f"reddit:{len(matching_posts)}_posts")
+
+        return candidates
+
+    def _enrich_with_domestic(
+        self,
+        candidates: list[NicheCandidate],
+        domestic_data: dict[str, list[dict]],
+    ) -> list[NicheCandidate]:
+        """Cross-reference candidates with domestic platform data."""
+        for platform_name, items in domestic_data.items():
+            if not items or items[0].get("id") == "fallback":
+                continue
+
+            # Collect titles from this platform
+            all_titles = [item.get("title", "") for item in items]
+
+            for candidate in candidates:
+                name_words = set(candidate.name.lower().split())
+                matching_items = []
+
+                for title in all_titles:
+                    title_lower = title.lower()
+                    overlap = len(name_words & set(title_lower.split()))
+                    if overlap >= 1:  # At least 1 word match (domestic titles may be shorter)
+                        matching_items.append(title)
+
+                if matching_items:
+                    candidate.sources.append(f"{platform_name}:{len(matching_items)}_items")
 
         return candidates
 

@@ -28,6 +28,23 @@ export default function DiscoveryPage() {
   const [result, setResult] = useState<SearchResult | null>(null);
   const [error, setError] = useState("");
 
+  // Data source selection
+  const [sources, setSources] = useState<string[]>(["reddit"]);
+  const SOURCE_OPTIONS = [
+    { id: "reddit", label: "Reddit (Overseas)", icon: "🌍" },
+    { id: "taptap", label: "TapTap", icon: "🎮" },
+    { id: "xiaohongshu", label: "Xiaohongshu (RED)", icon: "📕" },
+    { id: "bilibili", label: "Bilibili", icon: "📺" },
+  ];
+
+  const toggleSource = (sourceId: string) => {
+    setSources((prev) =>
+      prev.includes(sourceId)
+        ? prev.filter((s) => s !== sourceId)
+        : [...prev, sourceId]
+    );
+  };
+
   const handleSearch = async () => {
     if (!query.trim()) return;
     setLoading(true);
@@ -38,7 +55,7 @@ export default function DiscoveryPage() {
       const res = await fetch("/api/v1/discovery/niches/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query, sources }),
       });
       const data: SearchResult = await res.json();
       if (data.status === "ok") {
@@ -66,26 +83,46 @@ export default function DiscoveryPage() {
           </p>
         </div>
 
-        {/* Search Box */}
-        <div className="flex gap-3">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder='e.g. "co-op games", "base building", "survival craft"'
-            className="flex-1 bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-3
-                       text-neutral-100 placeholder:text-neutral-600 focus:border-indigo-500
-                       focus:outline-none transition-colors"
-          />
-          <button
-            onClick={handleSearch}
-            disabled={loading || !query.trim()}
-            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800
-                       disabled:text-neutral-600 rounded-lg font-medium transition-colors"
-          >
-            {loading ? "Searching..." : "Discover"}
-          </button>
+        {/* Search Box + Source Selector */}
+        <div className="space-y-3">
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              placeholder='e.g. "co-op games", "base building", "survival craft"'
+              className="flex-1 bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-3
+                         text-neutral-100 placeholder:text-neutral-600 focus:border-indigo-500
+                         focus:outline-none transition-colors"
+            />
+            <button
+              onClick={handleSearch}
+              disabled={loading || !query.trim()}
+              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800
+                         disabled:text-neutral-600 rounded-lg font-medium transition-colors"
+            >
+              {loading ? "Searching..." : "Discover"}
+            </button>
+          </div>
+
+          {/* Data Source Toggles */}
+          <div className="flex flex-wrap gap-2">
+            <span className="text-xs text-neutral-500 self-center mr-1">Data sources:</span>
+            {SOURCE_OPTIONS.map((opt) => (
+              <button
+                key={opt.id}
+                onClick={() => toggleSource(opt.id)}
+                className={`text-xs px-2.5 py-1 rounded-full transition-all ${
+                  sources.includes(opt.id)
+                    ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500/30"
+                    : "bg-neutral-900 text-neutral-600 border border-neutral-800 hover:border-neutral-700"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Error */}
