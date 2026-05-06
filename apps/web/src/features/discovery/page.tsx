@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-// Types (mirrors shared-types/index.ts)
 interface NicheCandidate {
   slug: string;
   name: string;
@@ -16,26 +16,28 @@ interface NicheCandidate {
 interface SearchResult {
   project_id: string;
   query: string;
+  sources_used?: string[];
   candidates: NicheCandidate[];
   generated_at: string;
   candidate_count: number;
   status: string;
 }
 
+const SOURCE_OPTIONS = [
+  { id: "reddit", label: "Reddit" },
+  { id: "taptap", label: "TapTap" },
+  { id: "xiaohongshu", label: "XHS" },
+  { id: "bilibili", label: "BiliBili" },
+];
+
 export default function DiscoveryPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SearchResult | null>(null);
   const [error, setError] = useState("");
-
-  // Data source selection
   const [sources, setSources] = useState<string[]>(["reddit"]);
-  const SOURCE_OPTIONS = [
-    { id: "reddit", label: "Reddit (Overseas)", icon: "🌍" },
-    { id: "taptap", label: "TapTap", icon: "🎮" },
-    { id: "xiaohongshu", label: "Xiaohongshu (RED)", icon: "📕" },
-    { id: "bilibili", label: "Bilibili", icon: "📺" },
-  ];
 
   const toggleSource = (sourceId: string) => {
     setSources((prev) =>
@@ -57,157 +59,181 @@ export default function DiscoveryPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query, sources }),
       });
-      const data: SearchResult = await res.json();
+      const data = await res.json() as SearchResult & { detail?: string };
       if (data.status === "ok") {
         setResult(data);
       } else {
-        setError(data.detail || "Search failed");
+        setError((data as { detail?: string }).detail || "Search failed");
       }
-    } catch (e) {
+    } catch {
       setError("Failed to connect to API");
     } finally {
       setLoading(false);
     }
   };
 
+  // Auto-navigate to Phase 2 when a niche is selected
+  const handleSelectNiche = (niche: NicheCandidate) => {
+    const pid = result?.project_id || "";
+    router.push(`/phase/2?project_id=${pid}&niche_slug=${niche.slug}&niche_name=${niche.name}`);
+  };
+
   return (
-    <main className="min-h-screen bg-neutral-950 text-neutral-200 p-4 md:p-8">
-      <div className="max-w-5xl mx-auto space-y-8">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-100">
-            Phase 1: Niche Discovery
-          </h1>
-          <p className="text-sm text-neutral-500 mt-1">
-            Enter a broad game category. Get structured niche candidates.
-          </p>
+    <div className="mi-scroll-area mi-safe-bottom">
+      {/* ── Header ─────────────────────────────── */}
+      <header className="mi-header pb-20">
+        <div className="flex items-center gap-3 mb-4">
+          <button onClick={() => router.push("/")} className="text-white/80 p-1 -ml-1">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <h1 className="text-white text-lg font-bold">Phase 1: Discover</h1>
         </div>
 
-        {/* Search Box + Source Selector */}
-        <div className="space-y-3">
-          <div className="flex gap-3">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              placeholder='e.g. "co-op games", "base building", "survival craft"'
-              className="flex-1 bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-3
-                         text-neutral-100 placeholder:text-neutral-600 focus:border-indigo-500
-                         focus:outline-none transition-colors"
-            />
+        {/* Search Box */}
+        <div className="relative">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </div>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            placeholder='e.g. "co-op games", "chill farming sim"'
+            className="w-full bg-white/95 backdrop-blur-sm rounded-full pl-11 pr-4 py-3 text-[15px] text-gray-900 placeholder:text-gray-400 outline-none shadow-lg shadow-black/5"
+          />
+        </div>
+
+        {/* Source Pills */}
+        <div className="flex gap-1.5 mt-3 overflow-x-auto pb-1 scrollbar-none">
+          {SOURCE_OPTIONS.map((opt) => (
             <button
-              onClick={handleSearch}
-              disabled={loading || !query.trim()}
-              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800
-                         disabled:text-neutral-600 rounded-lg font-medium transition-colors"
+              key={opt.id}
+              onClick={() => toggleSource(opt.id)}
+              className={`flex-shrink-0 text-[12px] px-3 py-1.5 rounded-full transition-all ${
+                sources.includes(opt.id)
+                  ? "bg-white text-blue-500 font-medium shadow-sm"
+                  : "bg-white/15 text-white/80"
+              }`}
             >
-              {loading ? "Searching..." : "Discover"}
+              {opt.label}
             </button>
-          </div>
-
-          {/* Data Source Toggles */}
-          <div className="flex flex-wrap gap-2">
-            <span className="text-xs text-neutral-500 self-center mr-1">Data sources:</span>
-            {SOURCE_OPTIONS.map((opt) => (
-              <button
-                key={opt.id}
-                onClick={() => toggleSource(opt.id)}
-                className={`text-xs px-2.5 py-1 rounded-full transition-all ${
-                  sources.includes(opt.id)
-                    ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500/30"
-                    : "bg-neutral-900 text-neutral-600 border border-neutral-800 hover:border-neutral-700"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
+          ))}
         </div>
+      </header>
+
+      {/* ── Content ─────────────────────────────── */}
+      <main className="px-4 -mt-10 relative z-10 space-y-3 pb-8">
+        {/* Search Button */}
+        {!result && !loading && (
+          <button
+            onClick={handleSearch}
+            className="w-full mi-btn mi-btn-primary py-3.5 text-[15px] shadow-md shadow-blue-200"
+          >
+            Discover Niches
+          </button>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="mi-card p-8 text-center">
+            <div className="inline-block animate-spin rounded-full h-7 w-7 border-b-2 border-blue-500 mb-3" />
+            <p className="text-[13px] text-gray-500">Searching across platforms...</p>
+            <p className="text-[11px] text-gray-400 mt-1">{sources.join(" + ")}</p>
+          </div>
+        )}
 
         {/* Error */}
         {error && (
-          <div className="bg-red-950/50 border border-red-900 rounded-lg px-4 py-3 text-red-400 text-sm">
-            {error}
+          <div className="bg-red-50 border border-red-100 rounded-xl p-3.5 text-red-500 text-[13px]">{error}</div>
+        )}
+
+        {/* Results Header */}
+        {result && result.candidate_count > 0 && (
+          <div className="flex items-center justify-between pt-1 pb-1">
+            <div>
+              <p className="text-[13px] font-semibold text-gray-900">
+                {result.candidate_count} niches found
+              </p>
+              <p className="text-[11px] text-gray-400 mt-0.5">
+                &ldquo;{result.query}&rdquo; · {result.sources_used?.join(", ") || "reddit"}
+              </p>
+            </div>
+            <button
+              onClick={() => { setResult(null); setError(""); }}
+              className="text-[12px] text-blue-500"
+            >
+              Clear
+            </button>
           </div>
         )}
 
-        {/* Loading */}
-        {loading && (
-          <div className="text-center py-12 text-neutral-500">
-            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500" />
-            <p className="mt-3 text-sm">Querying Google + Reddit...</p>
+        {/* Niche Cards */}
+        {result?.candidates.map((niche, i) => (
+          <div
+            key={niche.slug}
+            onClick={() => handleSelectNiche(niche)}
+            className="mi-card active:bg-gray-50 cursor-pointer transition-colors"
+          >
+            <div className="p-4 flex gap-3">
+              {/* Rank */}
+              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0 text-[13px] font-bold">
+                {i + 1}
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-[15px] text-gray-900 truncate">
+                  {niche.name}
+                </h3>
+                <p className="text-[13px] text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">
+                  {niche.positioning}
+                </p>
+                {niche.core_compromise && (
+                  <p className="text-[11px] text-orange-400/80 mt-1 truncate">
+                    Avoids: {niche.core_compromise}
+                  </p>
+                )}
+
+                {/* Source tags */}
+                <div className="flex gap-1 mt-2 flex-wrap">
+                  {(niche.sources || []).map((src) => (
+                    <span key={src} className="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+                      {src.replace(/:\d+_.*/, "")}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Arrow */}
+              <div className="self-center text-gray-300">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
+            </div>
           </div>
-        )}
-
-        {/* Results Grid */}
-        {result && result.candidates.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between text-sm text-neutral-500">
-              <span>
-                Found <strong className="text-neutral-300">{result.candidate_count}</strong> niche candidates for &ldquo;{result.query}&rdquo;
-              </span>
-              <span>Project: <code className="text-xs bg-neutral-900 px-2 py-0.5 rounded">{result.project_id}</code></span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {result.candidates.map((c, i) => (
-                <NicheCard key={c.slug} candidate={c} rank={i + 1} />
-              ))}
-            </div>
-
-            {/* Next Phase CTA */}
-            <div className="pt-4 border-t border-neutral-800 flex justify-between items-center">
-              <span className="text-sm text-neutral-500">
-                Select a niche to continue to → Phase 2: Sentiment Analysis
-              </span>
-              <a
-                href={`/phase/2?project_id=${result.project_id}`}
-                className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm transition-colors"
-              >
-                Continue to Phase 2 →
-              </a>
-            </div>
-          </div>
-        )}
-      </div>
-    </main>
-  );
-}
-
-// ─── Niche Card Component ───────────────────────────────
-
-function NicheCard({ candidate, rank }: { candidate: NicheCandidate; rank: number }) {
-  return (
-    <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 hover:border-neutral-700 transition-colors group">
-      {/* Rank + Name */}
-      <div className="flex items-start justify-between mb-3">
-        <span className="text-xs font-mono text-neutral-600">#{rank.toString().padStart(2, "0")}</span>
-        <h3 className="font-semibold text-neutral-100 group-hover:text-indigo-400 transition-colors">
-          {candidate.name}
-        </h3>
-      </div>
-
-      {/* Positioning */}
-      <p className="text-sm text-neutral-400 mb-3 line-clamp-2">{candidate.positioning}</p>
-
-      {/* Core Compromise (if any) */}
-      {candidate.core_compromise && (
-        <div className="mb-3">
-          <span className="text-xs text-amber-500/80 bg-amber-500/10 px-2 py-0.5 rounded">
-            Avoids: {candidate.core_compromise}
-          </span>
-        </div>
-      )}
-
-      {/* Meta */}
-      <div className="flex flex-wrap gap-1.5 pt-3 border-t border-neutral-800">
-        {candidate.sources.map((src) => (
-          <span key={src} className="text-[10px] font-mono text-neutral-600 bg-neutral-800/50 px-1.5 py-0.5 rounded">
-            {src.replace(":", ": ")}
-          </span>
         ))}
-      </div>
+
+        {/* Next step CTA */}
+        {result && result.candidate_count > 0 && (
+          <div className="pt-2 pb-2">
+            <p className="text-[12px] text-gray-400 text-center mb-3">
+              Select a niche → Analyze player sentiment
+            </p>
+            <button
+              onClick={() => router.push(`/phase/2?project_id=${result.project_id}`)}
+              className="w-full mi-btn mi-btn-secondary"
+            >
+              Continue to Phase 2 →
+            </button>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

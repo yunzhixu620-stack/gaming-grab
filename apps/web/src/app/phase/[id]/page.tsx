@@ -10,27 +10,27 @@ const PHASES: Record<number, { title: string; component: React.FC }> = {
   4: { title: "Phase 4: Asset Generation", component: AssetGenPage },
 };
 
-export function generateMetadata({ params }: { params: { id: string } }) {
-  const num = parseInt(params.id, 10);
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const num = parseInt(id, 10);
   const phase = PHASES[num];
   return {
-    title: `${phase?.title || `Phase ${params.id}`} | Gaming PM Agent`,
+    title: `${phase?.title || `Phase ${id}`} | Gaming PM Agent`,
   };
 }
 
-export default function Page({ params }: { params: { id: string } }) {
-  const num = parseInt(params.id, 10);
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const num = parseInt(id, 10);
   const phase = PHASES[num];
 
   if (!phase) {
     return (
-      <main className="min-h-screen bg-neutral-950 text-neutral-200 flex items-center justify-center">
+      <main className="min-h-screen bg-[var(--mi-bg-page)] text-gray-200 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Phase {params.id}</h1>
+          <h1 className="text-3xl font-bold">Phase {id}</h1>
           <p className="text-neutral-500 mt-2">Coming soon...</p>
-          <a href="/" className="mt-4 inline-block text-indigo-400 hover:text-indigo-300">
-            ← Back to Home
-          </a>
+          <a href="/" className="mt-4 inline-block text-blue-400 hover:text-blue-300">← Back to Home</a>
         </div>
       </main>
     );

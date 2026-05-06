@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface GeneratedAssets {
   project_id: string;
@@ -15,6 +15,7 @@ interface GeneratedAssets {
 }
 
 export default function AssetGenPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = searchParams.get("project_id") || "";
 
@@ -26,139 +27,88 @@ export default function AssetGenPage() {
   const [copied, setCopied] = useState<string | null>(null);
 
   const handleGenerate = async () => {
-    if (!projectId) {
-      setError("Need a project_id from Phase 3");
-      return;
-    }
-    setLoading(true);
-    setError("");
-    setResult(null);
-
+    if (!projectId) { setError("Need a project_id"); return; }
+    setLoading(true); setError(""); setResult(null);
     try {
-      const res = await fetch("/api/v1/assets/generate", {
+      const res = await fetch("/api/v1/asset-gen/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          project_id: projectId,
-          custom_name: customName,
-          custom_genre: customGenre,
-        }),
+        body: JSON.stringify({ project_id: projectId, custom_name: customName, custom_genre: customGenre }),
       });
-      const data: GeneratedAssets = await res.json();
-      if (data.status === "ok") {
-        setResult(data);
-      } else {
-        setError(data.detail || "Generation failed");
-      }
-    } catch (e) {
-      setError("Failed to connect to API");
-    } finally {
-      setLoading(false);
-    }
+      const data = await res.json() as GeneratedAssets & { detail?: string };
+      if (data.status === "ok") setResult(data);
+      else setError((data as { detail?: string }).detail || "Generation failed");
+    } catch { setError("Failed to connect to API"); }
+    finally { setLoading(false); }
   };
 
-  // Copy to clipboard
+  useEffect(() => {
+    if (projectId && !result && !loading) handleGenerate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(label);
-      setTimeout(() => setCopied(null), 2000);
-    });
+    navigator.clipboard.writeText(text).then(() => { setCopied(label); setTimeout(() => setCopied(null), 2000); });
   };
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-neutral-200 p-4 md:p-8">
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Header */}
-        <div>
-          <div className="flex items-center gap-2 text-xs text-neutral-500 font-mono mb-1">
-            <a href="/" className="hover:text-indigo-400">Home</a>
-            <span>→</span>
-            <a href="/phase/1" className="hover:text-indigo-400">Phase 1</a>
-            <span>→</span>
-            <a href={`/phase/2?project_id=${projectId}`} className="hover:text-indigo-400">Phase 2</a>
-            <span>→</span>
-            <a href={`/phase/3?project_id=${projectId}`} className="hover:text-indigo-400">Phase 3</a>
-            <span>→</span>
-            <span className="text-neutral-400">Phase 4</span>
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-100">
-            Phase 4: Asset Generation
-          </h1>
-          <p className="text-sm text-neutral-500 mt-1">
-            Generate ready-to-use marketing assets from your Feature Backlog
-          </p>
-        </div>
-
-        {/* Controls */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <input
-            type="text"
-            value={customName}
-            onChange={(e) => setCustomName(e.target.value)}
-            placeholder="Game name (optional, auto-generated)"
-            className="bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-3
-                       text-neutral-100 placeholder:text-neutral-600 focus:border-indigo-500
-                       focus:outline-none transition-colors"
-          />
-          <input
-            type="text"
-            value={customGenre}
-            onChange={(e) => setCustomGenre(e.target.value)}
-            placeholder="Genre hint (optional)"
-            className="bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-3
-                       text-neutral-100 placeholder:text-neutral-600 focus:border-indigo-500
-                       focus:outline-none transition-colors"
-          />
-          <button
-            onClick={handleGenerate}
-            disabled={loading || !projectId}
-            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800
-                       disabled:text-neutral-600 rounded-lg font-medium transition-colors"
-          >
-            {loading ? "Generating..." : "Generate Assets"}
+    <div className="mi-scroll-area mi-safe-bottom">
+      <header className="mi-header pb-16">
+        <div className="flex items-center gap-3 mb-1">
+          <button onClick={() => router.back()} className="text-white/80 p-1 -ml-1">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
           </button>
+          <h1 className="text-white text-lg font-bold">Phase 4: Assets</h1>
         </div>
+        <p className="text-white/60 text-[12px] ml-9">Marketing-ready game assets</p>
+      </header>
 
-        {projectId && (
-          <p className="text-xs text-neutral-600">
-            Project ID: <code className="bg-neutral-900 px-1.5 py-0.5 rounded">{projectId}</code>
-          </p>
+      <main className="px-4 -mt-10 relative z-10 space-y-3 pb-8">
+        {/* Loading */}
+        {loading && (
+          <div className="mi-card p-10 text-center">
+            <div className="inline-block animate-spin rounded-full h-7 w-7 border-b-2 border-blue-500 mb-3" />
+            <p className="text-[13px] text-gray-500">Generating marketing assets...</p>
+          </div>
         )}
 
         {/* Error */}
         {error && (
-          <div className="bg-red-950/50 border border-red-900 rounded-lg px-4 py-3 text-red-400 text-sm">{error}</div>
-        )}
-
-        {/* Loading */}
-        {loading && (
-          <div className="text-center py-12 text-neutral-500">
-            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500" />
-            <p className="mt-3 text-sm">Generating marketing assets...</p>
-          </div>
+          <div className="bg-red-50 border border-red-100 rounded-xl p-3.5 text-red-500 text-[13px]">{error}</div>
         )}
 
         {/* Results */}
         {result && result.status === "ok" && (
-          <div className="space-y-5">
+          <>
             {/* Elevator Pitch */}
             <AssetCard
               title="Elevator Pitch"
               subtitle="One-sentence hook for investors / press"
               content={result.elevator_pitch}
+              icon={
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+              }
               label="pitch"
-              copied={copied}
-              onCopy={copyToClipboard}
+              copied={copied} onCopy={copyToClipboard}
             />
 
-            {/* Steam Short Description */}
+            {/* Steam Description */}
             <AssetCard
               title="Steam Short Description"
               subtitle="SEO-optimized with player language"
               content={result.steam_short_desc}
+              icon={
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+              }
               label="steam-desc"
-              copied={copied}
-              onCopy={copyToClipboard}
+              copied={copied} onCopy={copyToClipboard}
               isMarkdown
             />
 
@@ -167,116 +117,97 @@ export default function AssetGenPage() {
               title="Devlog Topic"
               subtitle="Reddit-resonant research angle"
               content={result.devlog_topic}
+              icon={
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+              }
               label="devlog"
-              copied={copied}
-              onCopy={copyToClipboard}
+              copied={copied} onCopy={copyToClipboard}
               isMarkdown
             />
 
-            {/* Steam Tags */}
-            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5">
+            {/* Tags */}
+            <div className="mi-card p-4">
               <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h3 className="font-medium text-sm text-neutral-200">Steam Tag Suggestions</h3>
-                  <p className="text-[10px] text-neutral-500 mt-0.5">
-                    {result.tag_count} tags derived from features + player emotions
-                  </p>
+                <div className="flex items-center gap-2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></svg>
+                  <span className="font-semibold text-[13px] text-gray-900">Steam Tags</span>
                 </div>
-                <button
-                  onClick={() =>
-                    copyToClipboard(result.tag_suggestions.join(", "), "tags")
-                  }
-                  className="text-xs bg-neutral-800 hover:bg-neutral-700 px-3 py-1.5 rounded transition-colors"
-                >
+                <button onClick={() => copyToClipboard(result.tag_suggestions.join(", "), "tags")}
+                  className={`text-[11px] px-2.5 py-1 rounded-full transition-all ${copied === "tags" ? "bg-green-500 text-white" : "bg-gray-100 text-gray-500"}`}>
                   {copied === "tags" ? "Copied!" : "Copy All"}
                 </button>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {result.tag_suggestions.map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-xs bg-indigo-950/30 text-indigo-400/80 px-2.5 py-1 rounded-full border border-indigo-900/30"
-                  >
+                  <span key={tag} className="text-[11px] bg-blue-50 text-blue-500 px-2.5 py-1 rounded-full border border-blue-100">
                     {tag}
                   </span>
                 ))}
               </div>
             </div>
 
-            {/* Done CTA */}
-            <div className="pt-4 border-t border-neutral-800 text-center space-y-3">
-              <p className="text-sm text-neutral-500">
-                All 4 phases complete! Your game concept is backed by real player demand.
-              </p>
-              <div className="flex gap-3 justify-center">
-                <a
-                  href="/"
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm transition-colors"
-                >
-                  Start New Project →
-                </a>
-                <a
-                  href={`/phase/1`}
-                  className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm transition-colors"
-                >
-                  ← Back to Phase 1
-                </a>
+            {/* Done */}
+            <div className="mi-card p-5 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-green-50 text-green-500 flex items-center justify-center mx-auto">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+              <p className="text-[13px] text-gray-600">All 4 phases complete!</p>
+              <p className="text-[11px] text-gray-400">Your concept is backed by real player demand.</p>
+              <div className="flex gap-2 pt-2">
+                <button onClick={() => router.push("/")} className="flex-1 mi-btn mi-btn-primary py-2.5 text-[13px]">
+                  New Project
+                </button>
+                <button onClick={() => router.push("/phase/1")} className="flex-1 mi-btn mi-btn-secondary py-2.5 text-[13px]">
+                  Start Over
+                </button>
               </div>
             </div>
-          </div>
+          </>
         )}
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
 
-// ─── Reusable Asset Card Component ──────────────────────
+// ── Reusable Asset Card ─────────────────────────────
 
 function AssetCard({
-  title,
-  subtitle,
-  content,
-  label,
-  copied,
-  onCopy,
-  isMarkdown = false,
+  title, subtitle, content, icon, label, copied, onCopy, isMarkdown = false,
 }: {
-  title: string;
-  subtitle: string;
-  content: string;
-  label: string;
-  copied: string | null;
-  onCopy: (text: string, label: string) => void;
-  isMarkdown?: boolean;
+  title: string; subtitle: string; content: string; icon: React.ReactNode;
+  label: string; copied: string | null; onCopy: (t: string, l: string) => void; isMarkdown?: boolean;
 }) {
   return (
-    <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5">
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <h3 className="font-medium text-sm text-neutral-200">{title}</h3>
-          <p className="text-[10px] text-neutral-500 mt-0.5">{subtitle}</p>
+    <div className="mi-card overflow-hidden">
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2 text-gray-400">
+            {icon}
+            <div>
+              <p className="font-semibold text-[13px] text-gray-900 leading-none">{title}</p>
+              <p className="text-[10px] text-gray-400 mt-0.5">{subtitle}</p>
+            </div>
+          </div>
+          <button onClick={() => onCopy(content, label)}
+            className={`text-[11px] px-2.5 py-1 rounded-full transition-all ${copied === label ? "bg-green-500 text-white" : "bg-gray-100 text-gray-500"}`}
+          >{copied === label ? "Copied!" : "Copy"}</button>
         </div>
-        <button
-          onClick={() => onCopy(content, label)}
-          className={`text-xs px-3 py-1.5 rounded transition-colors ${
-            copied === label
-              ? "bg-green-900/40 text-green-400"
-              : "bg-neutral-800 hover:bg-neutral-700"
-          }`}
-        >
-          {copied === label ? "Copied!" : "Copy"}
-        </button>
-      </div>
 
-      {isMarkdown ? (
-        <pre className="text-sm text-neutral-300 whitespace-pre-wrap leading-relaxed font-mono bg-neutral-950/50 rounded-lg p-4 overflow-x-auto max-h-80 overflow-y-auto">
-          {content}
-        </pre>
-      ) : (
-        <p className="text-sm text-neutral-300 leading-relaxed bg-neutral-950/50 rounded-lg p-4 italic">
-          &ldquo;{content}&rdquo;
-        </p>
-      )}
+        {isMarkdown ? (
+          <pre className="text-[12px] text-gray-600 whitespace-pre-wrap leading-relaxed font-mono bg-gray-50 rounded-lg p-3 max-h-56 overflow-y-auto mt-2">
+            {content}
+          </pre>
+        ) : (
+          <p className="text-[13px] text-gray-700 leading-relaxed italic bg-gray-50 rounded-lg p-3 mt-2 line-clamp-4">
+            &ldquo;{content}&rdquo;
+          </p>
+        )}
+      </div>
     </div>
   );
 }

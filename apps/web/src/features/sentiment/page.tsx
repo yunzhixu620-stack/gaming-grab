@@ -1,9 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-// Types
 interface ConsensusPoint {
   id: string;
   pain_point: string;
@@ -27,21 +26,17 @@ interface AnalysisResult {
 }
 
 export default function SentimentPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = searchParams.get("project_id") || "";
+  const initialSlug = searchParams.get("niche_slug") || "";
+  const initialName = searchParams.get("niche_name") || "";
 
-  const [nicheSlug, setNicheSlug] = useState("");
-  const [nicheName, setNicheName] = useState("");
+  const [nicheSlug, setNicheSlug] = useState(initialSlug);
+  const [nicheName, setNicheName] = useState(initialName);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState("");
-
-  // Auto-fill if coming from Phase 1
-  useEffect(() => {
-    if (projectId && !nicheSlug) {
-      // Could fetch Phase 1 data to pre-fill; for now just show the field
-    }
-  }, [projectId]);
 
   const handleAnalyze = async () => {
     if (!nicheSlug.trim() || !nicheName.trim()) return;
@@ -59,213 +54,165 @@ export default function SentimentPage() {
           project_id: projectId,
         }),
       });
-      const data: AnalysisResult = await res.json();
-      if (data.status === "ok") {
-        setResult(data);
-      } else {
-        setError(data.detail || "Analysis failed");
-      }
-    } catch (e) {
+      const data = await res.json() as AnalysisResult & { detail?: string };
+      if (data.status === "ok") setResult(data);
+      else setError((data as { detail?: string }).detail || "Analysis failed");
+    } catch {
       setError("Failed to connect to API");
     } finally {
       setLoading(false);
     }
   };
 
+  // Auto-analyze if params provided
+  useEffect(() => {
+    if (initialSlug && initialName && !result && !loading) handleAnalyze();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const sentColor = (score: number) =>
+    score > 0.3 ? { bg: "bg-green-50", text: "text-green-600", label: "positive" } :
+    score < -0.3 ? { bg: "bg-red-50", text: "text-red-500", label: "negative" } :
+    { bg: "bg-gray-50", text: "text-gray-500", label: "neutral" };
+
   return (
-    <main className="min-h-screen bg-neutral-950 text-neutral-200 p-4 md:p-8">
-      <div className="max-w-5xl mx-auto space-y-8">
-        {/* Header */}
-        <div>
-          <div className="flex items-center gap-2 text-xs text-neutral-500 font-mono mb-1">
-            <a href="/" className="hover:text-indigo-400">Home</a>
-            <span>→</span>
-            <a href="/phase/1" className="hover:text-indigo-400">Phase 1</a>
-            <span>→</span>
-            <span className="text-neutral-400">Phase 2</span>
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-100">
-            Phase 2: Sentiment &amp; Consensus
-          </h1>
-          <p className="text-sm text-neutral-500 mt-1">
-            Select a niche from Phase 1 → Analyze Reddit sentiment → Extract player pain points &amp; desires
-          </p>
-        </div>
-
-        {/* Input */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <input
-            type="text"
-            value={nicheSlug}
-            onChange={(e) => setNicheSlug(e.target.value)}
-            placeholder="Niche slug (e.g. chill-coop-farming)"
-            className="bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-3
-                       text-neutral-100 placeholder:text-neutral-600 focus:border-indigo-500
-                       focus:outline-none transition-colors"
-          />
-          <input
-            type="text"
-            value={nicheName}
-            onChange={(e) => setNicheName(e.target.value)}
-            placeholder="Niche name (e.g. Chill Co-op Farming)"
-            className="bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-3
-                       text-neutral-100 placeholder:text-neutral-600 focus:border-indigo-500
-                       focus:outline-none transition-colors"
-          />
-          <button
-            onClick={handleAnalyze}
-            disabled={loading || !nicheSlug.trim() || !nicheName.trim()}
-            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800
-                       disabled:text-neutral-600 rounded-lg font-medium transition-colors"
-          >
-            {loading ? "Analyzing..." : "Analyze Reddit"}
+    <div className="mi-scroll-area mi-safe-bottom">
+      {/* Header */}
+      <header className="mi-header pb-16">
+        <div className="flex items-center gap-3 mb-1">
+          <button onClick={() => router.back()} className="text-white/80 p-1 -ml-1">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
           </button>
+          <h1 className="text-white text-lg font-bold">Phase 2: Sentiment</h1>
         </div>
+        <p className="text-white/60 text-[12px] ml-9">Reddit sentiment analysis + consensus extraction</p>
+      </header>
 
-        {projectId && (
-          <p className="text-xs text-neutral-600">
-            Project ID: <code className="bg-neutral-900 px-1.5 py-0.5 rounded">{projectId}</code>
-          </p>
-        )}
-
-        {/* Error */}
-        {error && (
-          <div className="bg-red-950/50 border border-red-900 rounded-lg px-4 py-3 text-red-400 text-sm">
-            {error}
-          </div>
+      <main className="px-4 -mt-10 relative z-10 space-y-3 pb-8">
+        {/* Input (only show if no auto-data) */}
+        {!result && !loading && (
+          <>
+            <div className="mi-card p-4 space-y-3">
+              <input
+                type="text"
+                value={nicheSlug}
+                onChange={(e) => setNicheSlug(e.target.value)}
+                placeholder="Niche slug (e.g. chill-coop-farming)"
+                className="mi-input"
+              />
+              <input
+                type="text"
+                value={nicheName}
+                onChange={(e) => setNicheName(e.target.value)}
+                placeholder="Display name (e.g. Chill Co-op Farming)"
+                className="mi-input"
+              />
+              <button
+                onClick={handleAnalyze}
+                disabled={!nicheSlug.trim() || !nicheName.trim()}
+                className="w-full mi-btn mi-btn-primary py-3"
+              >
+                Analyze Reddit
+              </button>
+            </div>
+          </>
         )}
 
         {/* Loading */}
         {loading && (
-          <div className="text-center py-12 text-neutral-500">
-            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500" />
-            <p className="mt-3 text-sm">Querying Reddit (r/gamingsuggestions, r/indiegaming, r/games...)...</p>
+          <div className="mi-card p-10 text-center">
+            <div className="inline-block animate-spin rounded-full h-7 w-7 border-b-2 border-blue-500 mb-3" />
+            <p className="text-[13px] text-gray-500">Analyzing Reddit threads...</p>
           </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div className="bg-red-50 border border-red-100 rounded-xl p-3.5 text-red-500 text-[13px]">{error}</div>
         )}
 
         {/* Results */}
         {result && result.consensus_points.length > 0 && (
-          <div className="space-y-6">
-            {/* Summary Bar */}
-            <div className="flex flex-wrap gap-3 items-center text-sm">
-              <span className="text-neutral-400">
-                Found <strong className="text-neutral-200">{result.consensus_count}</strong> consensus points
-              </span>
-              {result.emotion_keywords.length > 0 && (
-                <div className="flex gap-1 flex-wrap">
-                  {result.emotion_keywords.slice(0, 8).map((kw) => (
-                    <span key={kw} className="text-[10px] bg-red-950/30 text-red-400/80 px-1.5 py-0.5 rounded">
-                      {kw}
-                    </span>
-                  ))}
-                </div>
-              )}
-              {result.scenario_keywords.length > 0 && (
-                <div className="flex gap-1 flex-wrap">
-                  {result.scenario_keywords.slice(0, 8).map((kw) => (
-                    <span key={kw} className="text-[10px] bg-blue-950/30 text-blue-400/80 px-1.5 py-0.5 rounded">
-                      {kw}
-                    </span>
-                  ))}
-                </div>
-              )}
+          <>
+            {/* Summary bar */}
+            <div className="mi-card p-3.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[13px] font-semibold text-gray-900">
+                  {result.consensus_count} consensus points
+                </span>
+                {result.emotion_keywords.slice(0, 6).map((kw) => (
+                  <span key={kw} className="text-[10px] bg-pink-50 text-pink-400 px-1.5 py-0.5 rounded-full">
+                    {kw}
+                  </span>
+                ))}
+              </div>
             </div>
 
-            {/* Consensus Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {result.consensus_points.map((cp) => (
-                <ConsensusCard key={cp.id} point={cp} />
-              ))}
-            </div>
+            {/* Consensus cards (米游社 feed style) */}
+            {result.consensus_points.map((cp) => {
+              const sc = sentColor(cp.sentiment_score);
+              return (
+                <div key={cp.id} className="mi-card overflow-hidden">
+                  {/* Colored top border for sentiment */}
+                  <div className={`h-1 ${
+                    cp.sentiment_score > 0.3 ? "bg-green-400" :
+                    cp.sentiment_score < -0.3 ? "bg-red-400" : "bg-gray-300"
+                  }`} />
 
-            {/* Next Phase CTA */}
-            <div className="pt-4 border-t border-neutral-800 flex justify-between items-center">
-              <span className="text-sm text-neutral-500">
-                Confirm consensus → Continue to Phase 3: Feature Backlog
-              </span>
-              <a
-                href={`/phase/3?project_id=${result.project_id}`}
-                className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm transition-colors"
-              >
-                Continue to Phase 3 →
-              </a>
-            </div>
-          </div>
+                  <div className="p-4 space-y-2.5">
+                    {/* Meta row */}
+                    <div className="flex items-center justify-between">
+                      <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${sc.bg} ${sc.text}`}>
+                        {sc.label} · {cp.sentiment_score.toFixed(2)}
+                      </span>
+                      <span className="text-[11px] text-gray-400 font-mono">
+                        ▲ {cp.upvotes} upvotes
+                      </span>
+                    </div>
+
+                    {/* Pain / Desire */}
+                    {cp.pain_point && cp.pain_point !== "Unknown" && (
+                      <div className="bg-orange-50/50 rounded-lg px-3 py-2">
+                        <span className="text-[10px] uppercase tracking-wider text-orange-400/80 font-semibold">Pain</span>
+                        <p className="text-[13px] text-gray-700 mt-0.5 leading-relaxed">{cp.pain_point}</p>
+                      </div>
+                    )}
+                    {cp.underlying_need && cp.underlying_need !== "Unknown" && (
+                      <div className="bg-emerald-50/50 rounded-lg px-3 py-2">
+                        <span className="text-[10px] uppercase tracking-wider text-emerald-500/80 font-semibold">Desire</span>
+                        <p className="text-[13px] text-gray-700 mt-0.5 leading-relaxed">{cp.underlying_need}</p>
+                      </div>
+                    )}
+
+                    {/* Quote */}
+                    <blockquote className="text-[13px] text-gray-500 leading-relaxed italic pl-3 border-l-2 border-gray-200 line-clamp-3">
+                      &ldquo;{cp.quote}&rdquo;
+                    </blockquote>
+
+                    {/* Source link */}
+                    {cp.source_url && (
+                      <a href={cp.source_url} target="_blank" rel="noopener noreferrer"
+                        className="text-[11px] text-blue-400 hover:text-blue-300 font-mono block">
+                        {cp.source_platform} → view thread
+                      </a>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Next CTA */}
+            <button
+              onClick={() => router.push(`/phase/3?project_id=${result.project_id}`)}
+              className="w-full mi-btn mi-btn-primary py-3.5 shadow-md shadow-blue-200"
+            >
+              Structure Features → Phase 3
+            </button>
+          </>
         )}
-      </div>
-    </main>
-  );
-}
-
-// ─── Consensus Card Component ──────────────────────────
-
-function ConsensusCard({ point }: { point: ConsensusPoint }) {
-  // Color based on sentiment
-  const sentColor =
-    point.sentiment_score > 0.3
-      ? "border-green-900/50" // positive
-      : point.sentiment_score < -0.3
-      ? "border-red-900/50"   // negative
-      : "border-neutral-800";  // neutral
-
-  const sentLabel =
-    point.sentiment_score > 0.3
-      ? "positive"
-      : point.sentiment_score < -0.3
-      ? "negative"
-      : "neutral";
-
-  return (
-    <div className={`bg-neutral-900 border rounded-xl p-5 ${sentColor}`}>
-      {/* Header: score + votes */}
-      <div className="flex items-center justify-between mb-3">
-        <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
-          sentLabel === "positive" ? "bg-green-950/50 text-green-400" :
-          sentLabel === "negative" ? "bg-red-950/50 text-red-400" :
-          "bg-neutral-800 text-neutral-500"
-        }`}>
-          sentiment: {point.sentiment_score.toFixed(2)} ({sentLabel})
-        </span>
-        <span className="text-[10px] font-mono text-neutral-600">
-          ▲ {point.upvotes} upvotes
-        </span>
-      </div>
-
-      {/* Pain Point */}
-      {point.pain_point && point.pain_point !== "Unknown" && (
-        <div className="mb-2">
-          <span className="text-[10px] uppercase tracking-wider text-red-400/70 font-medium">Pain</span>
-          <p className="text-sm text-red-300/90 mt-0.5">{point.pain_point}</p>
-        </div>
-      )}
-
-      {/* Underlying Need */}
-      {point.underlying_need && point.underlying_need !== "Unknown" && (
-        <div className="mb-3">
-          <span className="text-[10px] uppercase tracking-wider text-green-400/70 font-medium">Desire</span>
-          <p className="text-sm text-green-300/90 mt-0.5">{point.underlying_need}</p>
-        </div>
-      )}
-
-      {/* Verbatim Quote */}
-      <div className="mt-3 pt-3 border-t border-neutral-800">
-        <span className="text-[10px] uppercase tracking-wider text-neutral-600 font-medium">Player Quote</span>
-        <blockquote className="text-sm text-neutral-400 mt-1 italic leading-relaxed border-l-2 border-neutral-700 pl-3">
-            &ldquo;{point.quote}&rdquo;
-        </blockquote>
-      </div>
-
-      {/* Source */}
-      {point.source_url && (
-        <a
-          href={point.source_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[10px] font-mono text-neutral-600 hover:text-indigo-400 mt-2 inline-block"
-        >
-          {point.source_platform} → view thread
-        </a>
-      )}
+      </main>
     </div>
   );
 }

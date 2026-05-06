@@ -1,0 +1,522 @@
+/* ============================================
+   Gaming PM Agent — 米游社风格 Design System
+   Based on HoYolab (米游社) + TerraSphere (森空岛) analysis
+
+   Color tokens extracted from reference screenshots
+   ============================================ */
+
+:root {
+  /* ── Primary Palette ── */
+  --mi-blue-50: #EFF6FF;
+  --mi-blue-100: #DBEAFE;
+  --mi-blue-200: #BFDBFE;
+  --mi-blue-300: #93C5FD;
+  --mi-blue-400: #60A5FA;
+  --mi-blue-500: #3B82F6;    /* Main primary */
+  --mi-blue-600: #2563EB;    /* Primary hover/active */
+  --mi-blue-700: #1D4ED8;
+  --mi-blue-800: #1E40AF;
+  --mi-blue-900: #1E3A8A;
+
+  /* 米游社 Actual Colors (from screenshot analysis) */
+  --mi-primary: #4DA6FF;           /* Main bright blue (buttons, active states) */
+  --mi-primary-dark: #2B7CD3;      /* Darker blue (hover) */
+  --mi-primary-light: #E8F4FF;      /* Light blue tint (backgrounds) */
+  --mi-gradient-start: #1a6dbd;     /* Header gradient top */
+  --mi-gradient-end: #3d9be6;       /* Header gradient bottom */
+
+  /* ── Semantic Colors ── */
+  --mi-bg-page: #F5F7FA;            /* Page background (light gray) */
+  --mi-bg-card: #FFFFFF;            /* Card background */
+  --mi-bg-input: #F5F7FA;           /* Input field background */
+  --mi-bg-header: linear-gradient(135deg, var(--mi-gradient-start), var(--mi-gradient-end));
+
+  --mi-text-primary: #1A1A1A;       /* Main text */
+  --mi-text-secondary: #666666;      /* Subtitle/metadata */
+  --mi-text-tertiary: #999999;       /* Placeholder/hint */
+  --mi-text-inverse: #FFFFFF;        /* On colored backgrounds */
+
+  --mi-border: #EEEEEE;
+  --mi-border-light: #F0F0F0;
+
+  /* ── Status Colors ── */
+  --mi-success: #52C41A;
+  --mi-warning: #FAAD14;
+  --mi-error: #FF4D4F;
+  --mi-info: var(--mi-primary);
+
+  /* ── Spacing Scale ── */
+  --mi-space-xs: 4px;
+  --mi-space-sm: 8px;
+  --mi-space-md: 12px;
+  --mi-space-base: 16px;
+  --mi-space-lg: 20px;
+  --mi-space-xl: 24px;
+  --mi-space-2xl: 32px;
+
+  /* ── Radius ── */
+  --mi-radius-sm: 6px;
+  --mi-radius-md: 10px;
+  --mi-radius-lg: 14px;
+  --mi-radius-xl: 20px;
+  --mi-radius-full: 9999px;
+
+  /* ── Shadows ── */
+  --mi-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --mi-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --mi-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --mi-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
+
+  /* ── Typography ── */
+  --mi-font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue",
+                   Helvetica, Arial, sans-serif;
+
+  --mi-text-xs: 11px;
+  --mi-text-sm: 13px;
+  --mi-text-base: 15px;
+  --mi-text-md: 17px;
+  --mi-text-lg: 20px;
+  --mi-text-xl: 24px;
+  --mi-text-xxl: 28px;
+
+  /* ── Transitions ── */
+  --mi-transition-fast: 150ms ease;
+  --mi-transition-normal: 250ms ease;
+  --mi-transition-slow: 350ms ease;
+
+  /* ── Layout ── */
+  --mi-bottom-nav-height: 64px;
+  --mi-header-height: 56px;
+  --mi-max-width: 480px;             /* Mobile-first max width */
+}
+
+/* ============================================
+   Base Reset & Global Styles
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: var(--mi-text-base);
+  font-family: var(--mi-font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--mi-bg-page);
+  color: var(--mi-text-primary);
+}
+
+body {
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* Mobile container (centered like an app) */
+.mi-container {
+  max-width: var(--mi-max-width);
+  margin: 0 auto;
+  min-height: 100dvh;
+  position: relative;
+  background: var(--mi-bg-page);
+}
+
+/* ============================================
+   Component: mi-Card (米游社风格卡片)
+   ============================================ */
+
+.mi-card {
+  background: var(--mi-bg-card);
+  border-radius: var(--mi-radius-lg);
+  box-shadow: var(--mi-shadow-card);
+  overflow: hidden;
+  transition: transform var(--mi-transition-fast), box-shadow var(--mi-transition-fast);
+}
+
+.mi-card:active {
+  transform: scale(0.98);
+}
+
+.mi-card-body {
+  padding: var(--mi-space-base);
+}
+
+/* Card with header section (like 米游社 posts) */
+.mi-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--mi-space-sm);
+  padding: var(--mi-space-base) var(--mi-space-base) 0;
+}
+
+.mi-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--mi-radius-full);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid white;
+  box-shadow: var(--mi-shadow-sm);
+}
+
+.mi-avatar-sm {
+  width: 32px;
+  height: 32px;
+}
+
+.mi-avatar-lg {
+  width: 56px;
+  height: 56px;
+}
+
+/* ============================================
+   Component: mi-Badge (未读数/标签)
+   ============================================ */
+
+.mi-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: var(--mi-radius-full);
+  background: var(--mi-primary);
+  color: white;
+  font-size: var(--mi-text-xs);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.mi-badge-dot {
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  padding: 0;
+  background: #FF4D4F;
+}
+
+/* ============================================
+   Component: mi-Button (按钮)
+   ============================================ */
+
+.mi-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: var(--mi-radius-full);
+  font-size: var(--mi-text-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--mi-transition-fast);
+  border: none;
+  outline: none;
+  white-space: nowrap;
+}
+
+.mi-btn-primary {
+  background: var(--mi-primary);
+  color: white;
+}
+.mi-btn-primary:hover { background: var(--mi-primary-dark); }
+.mi-btn-primary:active { transform: scale(0.97); }
+
+.mi-btn-secondary {
+  background: var(--mi-primary-light);
+  color: var(--mi-primary);
+}
+.mi-btn-secondary:active { transform: scale(0.97); }
+
+.mi-btn-ghost {
+  background: transparent;
+  color: var(--mi-text-secondary);
+}
+.mi-btn-ghost:active { background: var(--mi-bg-input); }
+
+.mi-btn-sm {
+  padding: 6px 14px;
+  font-size: var(--mi-text-sm);
+}
+
+.mi-btn-lg {
+  padding: 14px 28px;
+  font-size: var(--mi-text-md);
+}
+
+/* FAB Button (like 米游社 center + button) */
+.mi-fab {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--mi-radius-full);
+  background: var(--mi-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(77, 166, 255, 0.4);
+  transition: all var(--mi-transition-fast);
+  border: none;
+  cursor: pointer;
+}
+.mi-fab:hover { transform: scale(1.05); }
+.mi-fab:active { transform: scale(0.95); }
+
+/* ============================================
+   Component: mi-TabBar (顶部标签栏)
+   ============================================ */
+
+.mi-tabbar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--mi-bg-card);
+  border-bottom: 1px solid var(--mi-border-light);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0 var(--mi-space-base);
+}
+.mi-tabbar::-webkit-scrollbar { display: none; }
+
+.mi-tab {
+  position: relative;
+  padding: var(--mi-space-md) var(--mi-space-sm);
+  font-size: var(--mi-text-base);
+  color: var(--mi-text-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--mi-transition-fast);
+  background: none;
+  border: none;
+}
+.mi-tab:hover { color: var(--mi-text-primary); }
+.mi-tab.active {
+  color: var(--mi-primary);
+  font-weight: 600;
+}
+.mi-tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--mi-primary);
+}
+
+/* ============================================
+   Component: mi-BottomNav (底部导航栏)
+   ============================================ */
+
+.mi-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--mi-bottom-nav-height);
+  background: var(--mi-bg-card);
+  border-top: 1px solid var(--mi-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.mi-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 56px;
+  padding: 4px 0;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--mi-text-tertiary);
+  transition: color var(--mi-transition-fast);
+  position: relative;
+}
+.mi-nav-item.active { color: var(--mi-primary); }
+.mi-nav-item .nav-icon {
+  width: 24px;
+  height: 24px;
+}
+.mi-nav-item .nav-label {
+  font-size: var(--mi-text-xs);
+  font-weight: 500;
+}
+
+/* Center FAB slot in bottom nav */
+.mi-nav-fab-slot {
+  position: relative;
+  top: -12px;
+}
+
+/* ============================================
+   Component: mi-Input (输入框)
+   ============================================ */
+
+.mi-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--mi-bg-input);
+  border: none;
+  border-radius: var(--mi-radius-md);
+  font-size: var(--mi-text-base);
+  color: var(--mi-text-primary);
+  font-family: inherit;
+  outline: none;
+  transition: all var(--mi-transition-fast);
+}
+.mi-input::placeholder { color: var(--mi-text-tertiary); }
+.mi-input:focus {
+  background: #fff;
+  box-shadow: 0 0 0 2px var(--mi-primary-light);
+}
+
+/* Search input (rounded pill style) */
+.mi-search-input {
+  padding-left: 40px;
+  border-radius: var(--mi-radius-full);
+  background: var(--mi-bg-input);
+}
+.mi-search-wrapper {
+  position: relative;
+}
+.mi-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--mi-text-tertiary);
+  pointer-events: none;
+}
+
+/* ============================================
+   Component: mi-ListItem (列表项)
+   ============================================ */
+
+.mi-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--mi-space-base);
+  padding: var(--mi-space-base);
+  background: var(--mi-bg-card);
+  cursor: pointer;
+  transition: background var(--mi-transition-fast);
+}
+.mi-list-item:active { background: var(--mi-bg-input); }
+.mi-list-item + .mi-list-item {
+  border-top: 1px solid var(--mi-border-light);
+}
+
+.mi-list-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.mi-list-title {
+  font-size: var(--mi-text-base);
+  font-weight: 500;
+  color: var(--mi-text-primary);
+  line-height: 1.4;
+}
+
+.mi-list-desc {
+  font-size: var(--mi-text-sm);
+  color: var(--mi-text-secondary);
+  line-height: 1.4;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mi-list-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--mi-space-sm);
+  flex-shrink: 0;
+}
+
+.mi-list-time {
+  font-size: var(--mi-text-xs);
+  color: var(--mi-text-tertiary);
+}
+
+/* ============================================
+   Component: mi-Header (渐变头部)
+   ============================================ */
+
+.mi-header {
+  background: var(--mi-bg-header);
+  padding: var(--mi-space-base);
+  padding-top: calc(var(--mi-space-base) + env(safe-area-inset-top, 0));
+  color: white;
+  position: relative;
+}
+
+.mi-header-title {
+  font-size: var(--mi-text-xl);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.mi-header-subtitle {
+  font-size: var(--mi-text-sm);
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+/* Header overlaps content below (米游社 style) */
+.mi-header-overlap {
+  margin-bottom: -20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+.mi-text-primary { color: var(--mi-text-primary); }
+.mi-text-secondary { color: var(--mi-text-secondary); }
+.mi-text-tertiary { color: var(--mi-text-tertiary); }
+.mi-text-blue { color: var(--mi-primary); }
+
+.mi-bg-primary { background-color: var(--mi-primary); }
+.mi-bg-light { background-color: var(--mi-primary-light); }
+.mi-bg-page { background-color: var(--mi-bg-page); }
+.mi-bg-white { background-color: var(--mi-bg-card); }
+
+.mi-rounded-sm { border-radius: var(--mi-radius-sm); }
+.mi-rounded-md { border-radius: var(--mi-radius-md); }
+.mi-rounded-lg { border-radius: var(--mi-radius-lg); }
+.mi-rounded-xl { border-radius: var(--mi-radius-xl); }
+.mi-rounded-full { border-radius: var(--mi-radius-full); }
+
+.mi-shadow-sm { box-shadow: var(--mi-shadow-sm); }
+.mi-shadow-md { box-shadow: var(--mi-shadow-md); }
+
+.mi-padded { padding: var(--mi-space-base); }
+.mi-padded-lg { padding: var(--mi-space-xl); }
+
+/* Safe area for bottom nav */
+.mi-safe-bottom {
+  padding-bottom: calc(var(--mi-bottom-nav-height) + env(safe-area-inset-bottom, 0));
+}
+
+/* Scroll area (for mobile app feel) */
+.mi-scroll-area {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}

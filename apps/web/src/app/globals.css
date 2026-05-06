@@ -1,17 +1,41 @@
 @import "tailwindcss";
 
-/* Cold gray / charcoal palette — minimal, professional */
-:root {
-  --bg-primary: #0a0a0a;
-  --bg-secondary: #141414;
-  --bg-card: #1a1a1a;
-  --border: #2a2a2a;
-  --text-primary: #e5e5e5;
-  --text-secondary: #a3a3a3;
-  --accent: #6366f1; /* indigo — neutral but distinctive */
+/* Import 米游社 Design System */
+@import "../styles/mi-design-system.css";
+
+/* ── Tailwind Theme Extension for 米游社 colors ── */
+
+@theme {
+  --color-mi-primary: #4DA6FF;
+  --color-mi-primary-dark: #2B7CD3;
+  --color-mi-primary-light: #E8F4FF;
+  --color-mi-bg-page: #F5F7FA;
+  --color-mi-text-secondary: #666666;
+  --color-mi-text-tertiary: #999999;
+
+  --font-family-sans: -apple-system, BlinkMacSystemFont, "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue",
+    Helvetica, Arial, sans-serif;
 }
 
+/* Global overrides to match 米游社 feel */
 body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background: var(--mi-bg-page);
+}
+
+/* Mobile app container: centered with max-width like a real app */
+@media (min-width: 640px) {
+  body {
+    display: flex;
+    justify-content: center;
+  }
+  body > div {
+    max-width: 480px;
+    width: 100%;
+    margin: 0 auto;
+    border-left: 1px solid var(--mi-border);
+    border-right: 1px solid var(--mi-border);
+    box-shadow: 0 0 40px rgba(0,0,0,0.06);
+    min-height: 100dvh;
+  }
 }
