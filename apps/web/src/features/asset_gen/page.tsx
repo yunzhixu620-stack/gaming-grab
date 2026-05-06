@@ -27,7 +27,7 @@ export default function AssetGenPage() {
   const [copied, setCopied] = useState<string | null>(null);
 
   const handleGenerate = async () => {
-    if (!projectId) { setError("Need a project_id"); return; }
+    if (!projectId) { setError("缺少项目 ID"); return; }
     setLoading(true); setError(""); setResult(null);
     try {
       const res = await fetch("/api/v1/asset-gen/generate", {
@@ -37,8 +37,8 @@ export default function AssetGenPage() {
       });
       const data = await res.json() as GeneratedAssets & { detail?: string };
       if (data.status === "ok") setResult(data);
-      else setError((data as { detail?: string }).detail || "Generation failed");
-    } catch { setError("Failed to connect to API"); }
+      else setError((data as { detail?: string }).detail || "生成失败");
+    } catch { setError("无法连接到后端服务"); }
     finally { setLoading(false); }
   };
 
@@ -56,36 +56,34 @@ export default function AssetGenPage() {
       <header className="mi-header pb-16">
         <div className="flex items-center gap-3 mb-1">
           <button onClick={() => router.back()} className="text-white/80 p-1 -ml-1">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><polyline points="15 18 9 12 15 6" /></svg>
           </button>
-          <h1 className="text-white text-lg font-bold">Phase 4: Assets</h1>
+          <h1 className="mi-header-title">第4阶段：资产生成</h1>
         </div>
-        <p className="text-white/60 text-[12px] ml-9">Marketing-ready game assets</p>
+        <p className="mi-header-subtitle ml-9">生成可直接用于 Steam 和社交媒体的营销素材</p>
       </header>
 
       <main className="px-4 -mt-10 relative z-10 space-y-3 pb-8">
-        {/* Loading */}
+        {/* 加载状态 */}
         {loading && (
           <div className="mi-card p-10 text-center">
             <div className="inline-block animate-spin rounded-full h-7 w-7 border-b-2 border-blue-500 mb-3" />
-            <p className="text-[13px] text-gray-500">Generating marketing assets...</p>
+            <p className="text-[13px] text-gray-500">正在生成营销资产...</p>
           </div>
         )}
 
-        {/* Error */}
+        {/* 错误提示 */}
         {error && (
           <div className="bg-red-50 border border-red-100 rounded-xl p-3.5 text-red-500 text-[13px]">{error}</div>
         )}
 
-        {/* Results */}
+        {/* 结果 */}
         {result && result.status === "ok" && (
           <>
-            {/* Elevator Pitch */}
+            {/* 一句话推介 */}
             <AssetCard
-              title="Elevator Pitch"
-              subtitle="One-sentence hook for investors / press"
+              title="一句话推介"
+              subtitle="用于投资人 / 媒体的核心卖点"
               content={result.elevator_pitch}
               icon={
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -96,10 +94,10 @@ export default function AssetGenPage() {
               copied={copied} onCopy={copyToClipboard}
             />
 
-            {/* Steam Description */}
+            {/* Steam 描述 */}
             <AssetCard
-              title="Steam Short Description"
-              subtitle="SEO-optimized with player language"
+              title="Steam 简短描述"
+              subtitle="SEO 优化，使用玩家语言"
               content={result.steam_short_desc}
               icon={
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -112,10 +110,10 @@ export default function AssetGenPage() {
               isMarkdown
             />
 
-            {/* Devlog Topic */}
+            {/* 开发日志选题 */}
             <AssetCard
-              title="Devlog Topic"
-              subtitle="Reddit-resonant research angle"
+              title="开发日志选题"
+              subtitle="Reddit 社区共鸣的研究角度"
               content={result.devlog_topic}
               icon={
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -128,43 +126,35 @@ export default function AssetGenPage() {
               isMarkdown
             />
 
-            {/* Tags */}
+            {/* Steam 标签 */}
             <div className="mi-card p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></svg>
-                  <span className="font-semibold text-[13px] text-gray-900">Steam Tags</span>
+                  <span className="font-semibold text-[13px] text-gray-900">Steam 标签</span>
                 </div>
                 <button onClick={() => copyToClipboard(result.tag_suggestions.join(", "), "tags")}
                   className={`text-[11px] px-2.5 py-1 rounded-full transition-all ${copied === "tags" ? "bg-green-500 text-white" : "bg-gray-100 text-gray-500"}`}>
-                  {copied === "tags" ? "Copied!" : "Copy All"}
+                  {copied === "tags" ? "已复制！" : "一键复制"}
                 </button>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {result.tag_suggestions.map((tag) => (
-                  <span key={tag} className="text-[11px] bg-blue-50 text-blue-500 px-2.5 py-1 rounded-full border border-blue-100">
-                    {tag}
-                  </span>
+                  <span key={tag} className="text-[11px] bg-blue-50 text-blue-500 px-2.5 py-1 rounded-full border border-blue-100">{tag}</span>
                 ))}
               </div>
             </div>
 
-            {/* Done */}
+            {/* 完成提示 */}
             <div className="mi-card p-5 text-center space-y-3">
               <div className="w-12 h-12 rounded-full bg-green-50 text-green-500 flex items-center justify-center mx-auto">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><polyline points="20 6 9 17 4 12" /></svg>
               </div>
-              <p className="text-[13px] text-gray-600">All 4 phases complete!</p>
-              <p className="text-[11px] text-gray-400">Your concept is backed by real player demand.</p>
+              <p className="text-[13px] text-gray-600">全部 4 个阶段已完成！</p>
+              <p className="text-[11px] text-gray-400">你的游戏概念已基于真实玩家需求完成验证。</p>
               <div className="flex gap-2 pt-2">
-                <button onClick={() => router.push("/")} className="flex-1 mi-btn mi-btn-primary py-2.5 text-[13px]">
-                  New Project
-                </button>
-                <button onClick={() => router.push("/phase/1")} className="flex-1 mi-btn mi-btn-secondary py-2.5 text-[13px]">
-                  Start Over
-                </button>
+                <button onClick={() => router.push("/")} className="flex-1 mi-btn mi-btn-primary py-2.5 text-[13px]">新建项目</button>
+                <button onClick={() => router.push("/phase/1")} className="flex-1 mi-btn mi-btn-secondary py-2.5 text-[13px]">重新开始</button>
               </div>
             </div>
           </>
@@ -173,8 +163,6 @@ export default function AssetGenPage() {
     </div>
   );
 }
-
-// ── Reusable Asset Card ─────────────────────────────
 
 function AssetCard({
   title, subtitle, content, icon, label, copied, onCopy, isMarkdown = false,
@@ -194,18 +182,15 @@ function AssetCard({
             </div>
           </div>
           <button onClick={() => onCopy(content, label)}
-            className={`text-[11px] px-2.5 py-1 rounded-full transition-all ${copied === label ? "bg-green-500 text-white" : "bg-gray-100 text-gray-500"}`}
-          >{copied === label ? "Copied!" : "Copy"}</button>
+            className={`text-[11px] px-2.5 py-1 rounded-full transition-all ${copied === label ? "bg-green-500 text-white" : "bg-gray-100 text-gray-500"}`}>
+            {copied === label ? "已复制！" : "复制"}
+          </button>
         </div>
 
         {isMarkdown ? (
-          <pre className="text-[12px] text-gray-600 whitespace-pre-wrap leading-relaxed font-mono bg-gray-50 rounded-lg p-3 max-h-56 overflow-y-auto mt-2">
-            {content}
-          </pre>
+          <pre className="text-[12px] text-gray-600 whitespace-pre-wrap leading-relaxed font-mono bg-gray-50 rounded-lg p-3 max-h-56 overflow-y-auto mt-2">{content}</pre>
         ) : (
-          <p className="text-[13px] text-gray-700 leading-relaxed italic bg-gray-50 rounded-lg p-3 mt-2 line-clamp-4">
-            &ldquo;{content}&rdquo;
-          </p>
+          <p className="text-[13px] text-gray-700 leading-relaxed italic bg-gray-50 rounded-lg p-3 mt-2 line-clamp-4">&ldquo;{content}&rdquo;</p>
         )}
       </div>
     </div>

@@ -115,13 +115,9 @@ body {
   overflow-x: hidden;
 }
 
-/* Mobile container (centered like an app) */
+/* Layout container (responsive: sidebar on desktop, full on mobile) */
 .mi-container {
-  max-width: var(--mi-max-width);
-  margin: 0 auto;
   min-height: 100dvh;
-  position: relative;
-  background: var(--mi-bg-page);
 }
 
 /* ============================================

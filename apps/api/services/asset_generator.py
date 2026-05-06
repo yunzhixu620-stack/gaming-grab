@@ -7,6 +7,7 @@ Takes Phase 3 Feature Backlog and generates ready-to-use marketing assets:
 - Tag Suggestions (Steam tags)
 
 This is the output phase — structured data → publishable content.
+All output is in Chinese for Chinese-speaking users.
 """
 
 import json
@@ -26,9 +27,10 @@ class AssetGenerator:
     """
     Generates game marketing assets from structured feature data.
     Everything is data-driven — no hallucination.
+    All output in Chinese.
     """
 
-    # Steam tag library (common indie game tags)
+    # Steam tag library (common indie game tags, bilingual)
     STEAM_TAGS_POOL = [
         "Indie", "Co-op", "Multiplayer", "Singleplayer", "Relaxing",
         "Sandbox", "Building", "Simulation", "RPG", "Adventure",
@@ -54,7 +56,7 @@ class AssetGenerator:
         custom_genre: str = "",
     ) -> GeneratedAssets:
         """
-        Full pipeline: load data → generate all assets.
+        Full pipeline: load data -> generate all assets.
         """
         print(f"[AssetGenerator] Generating assets for project: {project_id}")
 
@@ -111,7 +113,7 @@ class AssetGenerator:
         self, backlog: list[dict], summary: str, niche_slug: str,
         custom_name: str, custom_genre: str,
     ) -> str:
-        """Generate one-sentence elevator pitch."""
+        """Generate one-sentence elevator pitch in Chinese."""
         name = custom_name or niche_slug.replace("-", " ").title()
 
         # Extract top P0/P1 mechanisms
@@ -125,18 +127,19 @@ class AssetGenerator:
 
         if core and secondary:
             pitch = (
-                f"{name} is a {genre.lower()} where {core.lower()}, "
-                f"featuring {secondary.lower()}."
+                f"{name} 是一款{genre}，核心玩法是{core}，"
+                f"同时融合了{secondary}等特色系统。"
+                f"所有设计均基于真实玩家需求调研。"
             )
         elif core:
             pitch = (
-                f"{name} is a {genre.lower()} that delivers "
-                f"{core.lower()} — built for players tired of the same old grind."
+                f"{name} 是一款专注于{core}的{genre}，"
+                f"专为厌倦了同质化玩法的玩家打造。"
             )
         elif summary:
-            pitch = f"{name}: {summary.rstrip('.')}."
+            pitch = f"{name}：{summary.rstrip('。')}。"
         else:
-            pitch = f"{name} — a fresh take on {genre.lower()} built from real player demand."
+            pitch = f"{name} — 一款基于真实玩家需求打造的全新{genre}体验。"
 
         return pitch
 
@@ -145,7 +148,7 @@ class AssetGenerator:
         emotion_keywords: list[str], niche_slug: str,
         custom_name: str, custom_genre: str,
     ) -> str:
-        """Generate SEO-optimized Steam short description using player's own words."""
+        """Generate SEO-optimized Steam short description in Chinese."""
         name = custom_name or niche_slug.replace("-", " ").title()
 
         # Collect player quotes (verbatim snippets)
@@ -153,7 +156,6 @@ class AssetGenerator:
         for cp in consensus_points[:5]:
             quote = cp.get("quote", "")
             if quote and len(quote) > 30:
-                # Truncate to first sentence-ish
                 snippet = re.split(r'[.!?]', quote)[0][:150]
                 if snippet:
                     quotes.append(snippet)
@@ -162,10 +164,9 @@ class AssetGenerator:
         p0_features = [f.get("game_mechanism", "") for f in backlog if f.get("priority") == "P0"]
         p1_features = [f.get("game_mechanism", "") for f in backlog if f.get("priority") == "P1"]
 
-        # Build description sections
         lines = []
 
-        # Hook line (what players asked for)
+        # Hook line
         if quotes:
             need_pattern = re.search(
                 r"(looking for|wish|want|need|hope).{0,100}",
@@ -179,13 +180,13 @@ class AssetGenerator:
                 lines.append("")
 
         # What this game delivers
-        lines.append(f"**{name}** delivers:")
+        lines.append(f"**{name}** 为你带来：")
         lines.append("")
 
         for feat in p0_features[:3]:
-            lines.append(f"• {feat}")
+            lines.append(f"- {feat}")
         for feat in p1_features[:2]:
-            lines.append(f"• {feat}")
+            lines.append(f"- {feat}")
 
         lines.append("")
 
@@ -194,12 +195,17 @@ class AssetGenerator:
                        if kw in ("fun", "chill", "relaxing", "engaging", "beautiful",
                                  "satisfying", "amazing", "incredible", "addictive")]
         if positive_kw:
-            kw_str = ", ".join(positive_kw[:5])
-            lines.append(f"Players describe it as: **{kw_str}**.")
+            kw_map = {
+                "fun": "有趣", "chill": "轻松", "relaxing": "放松",
+                "engaging": "引人入胜", "beautiful": "精美", "satisfying": "令人满足",
+                "amazing": "惊艳", "incredible": "不可思议", "addictive": "让人上瘾",
+            }
+            kw_cn = [kw_map.get(k, k) for k in positive_kw[:5]]
+            lines.append(f"玩家评价：**{'、'.join(kw_cn)}**。")
             lines.append("")
 
         # Call to action
-        lines.append(f"Wishlist now to join the community building {name}.")
+        lines.append(f"立即加入愿望单，和社区一起见证 {name} 的成长！")
 
         return "\n".join(lines)
 
@@ -207,7 +213,7 @@ class AssetGenerator:
         self, backlog: list[dict], consensus_points: list[dict],
         niche_slug: str,
     ) -> str:
-        """Generate a devlog topic that would resonate on Reddit / social media."""
+        """Generate a devlog topic in Chinese that would resonate on social media."""
         name = niche_slug.replace("-", " ").title()
 
         # Find the most upvoted pain point
@@ -220,43 +226,42 @@ class AssetGenerator:
         p0_sorted = sorted(p0_features, key=lambda f: f.get("intensity", 0), reverse=True)
         top_feature = p0_sorted[0] if p0_sorted else {}
 
-        # Generate angle options
         angles = [
             {
-                "title": f"How we're building '{top_feature.get('game_mechanism', 'core gameplay')}' based on what {len(consensus_points)}+ Reddit threads asked for",
-                "angle": "data-driven development narrative",
+                "title": f"我们如何基于 {len(consensus_points)}+ 条玩家真实反馈来打造「{top_feature.get('game_mechanism', '核心玩法')}」",
+                "angle": "数据驱动开发叙事",
             },
             {
-                "title": f"Why players are tired of existing games in this space (and how {name} fixes it)",
-                "angle": "pain-point validation narrative",
+                "title": f"为什么玩家对现有同类游戏感到失望（以及 {name} 如何解决这些问题）",
+                "angle": "痛点验证叙事",
             },
             {
-                "title": f'Devlog #1: The "{name}" origin story — from r/gamingsuggestions to prototype',
-                "angle": "origin story / behind-the-scenes",
+                "title": f"开发日志 #1：「{name}」的诞生 — 从玩家讨论到原型验证",
+                "angle": "幕后故事 / 创作历程",
             },
         ]
 
         # Pick best angle based on available data
         if top_quote and top_pain.get("upvotes", 0) >= 10:
-            selected = angles[1]  # Pain point angle (strong signal)
+            selected = angles[1]
         elif top_feature:
-            selected = angles[0]  # Feature deep-dive
+            selected = angles[0]
         else:
-            selected = angles[2]  # Origin story fallback
+            selected = angles[2]
 
-        result = f"""**Title:** {selected["title"]}
+        result = f"""**标题：** {selected["title"]}
 
-**Angle:** {selected["angle"]}
+**切入点：** {selected["angle"]}
 
-**Why it works on Reddit:**
-- Uses real player language from our research
-- Shows data-driven approach (not just "my cool idea")
-- Invites discussion ("what would YOU want?")
+**为什么这个选题能引起共鸣：**
+- 使用了真实玩家的原话作为依据
+- 展示数据驱动的开发方法（而非"我觉得很酷的想法"）
+- 引发讨论（"你最想要什么功能？"）
 
-**Suggested format:**
-- 3-5 paragraphs with screenshots/GIFs
-- Include the original Reddit thread screenshot as proof of demand
-- End with an open question to drive comments"""
+**建议格式：**
+- 3-5 段文字 + 截图/GIF 动图
+- 附上原始玩家讨论截图作为需求证明
+- 结尾用开放性问题引导评论互动"""
 
         return result
 
@@ -299,27 +304,27 @@ class AssetGenerator:
         return sorted(list(tags))[:15]
 
     def _infer_genre(self, niche_slug: str) -> str:
-        """Infer game genre from niche slug."""
+        """Infer game genre from niche slug (Chinese)."""
         slug_lower = niche_slug.lower()
         genre_indicators = {
-            "co-op": "Co-op Game",
-            "survival": "Survival",
-            "building": "Building / Management",
-            "rpg": "RPG",
-            "puzzle": "Puzzle",
-            "strategy": "Strategy",
-            "simulation": "Simulation",
-            "horror": "Horror",
-            "farming": "Farming Sim",
-            "sandbox": "Sandbox",
-            "chill": "Relaxing Simulation",
-            "pixel": "Pixel Art Game",
-            "mobile": "Mobile Game",
+            "co-op": "合作游戏",
+            "survival": "生存游戏",
+            "building": "建造/经营",
+            "rpg": "角色扮演",
+            "puzzle": "解谜",
+            "strategy": "策略",
+            "simulation": "模拟经营",
+            "horror": "恐怖",
+            "farming": "农场模拟",
+            "sandbox": "沙盒",
+            "chill": "休闲模拟",
+            "pixel": "像素风格",
+            "mobile": "移动端游戏",
         }
         for keyword, genre in genre_indicators.items():
             if keyword in slug_lower:
                 return genre
-        return "Indie Game"
+        return "独立游戏"
 
     def _empty_output(self, project_id: str) -> GeneratedAssets:
         return GeneratedAssets(

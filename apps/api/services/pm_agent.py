@@ -31,42 +31,42 @@ class PMAgent:
     P2_CRITERIA = ["nice to have", "polish", "would be good", "bonus", "enhancement"]
     P3_CRITERIA = ["stretch goal", "later", "future", "optional", "v2"]
 
-    # Mechanism mapping keywords → game design language
+    # Mechanism mapping keywords → game design language (Chinese)
     MECHANISM_MAP = {
         # Co-op / Multiplayer patterns
-        "co-op": "Cooperative multiplayer system with shared progress",
-        "multiplayer": "Multiplayer networking with lobby/matchmaking",
-        "couch co-op": "Local split-screen or shared-input multiplayer",
-        "online": "Online connectivity with server infrastructure",
-        "drop-in": "Drop-in/drop-out cooperative play support",
+        "co-op": "合作多人系统，支持共享进度",
+        "multiplayer": "多人联机系统，含大厅/匹配机制",
+        "couch co-op": "本地分屏或同屏合作模式",
+        "online": "在线连接功能，含服务器基础设施",
+        "drop-in": "随时加入/退出的合作玩法支持",
 
         # Gameplay feel patterns
-        "chill": "Low-stress gameplay pacing with no time pressure",
-        "relaxing": "Ambient/atmospheric design with calming audiovisuals",
-        "no combat": "Non-violent conflict resolution mechanics",
-        "peaceful": "Zero-aggression interaction systems (farming, building, exploring)",
-        "low stress": "Forgiving difficulty curve with no fail states or soft failures",
+        "chill": "低压力游戏节奏，无时间限制",
+        "relaxing": "沉浸式氛围设计，舒缓的视听体验",
+        "no combat": "非暴力冲突解决机制",
+        "peaceful": "零攻击性交互系统（种田、建造、探索）",
+        "low stress": "宽容的难度曲线，无失败惩罚或软失败",
 
         # Progression patterns
-        "progression": "Skill/experience/unlock progression system",
-        "grindy acceptable": "Satisfying repetitive loops with visible incremental rewards",
-        "creative": "User-generated content or freeform creation tools",
-        "sandbox": "Open-ended environment with emergent gameplay possibilities",
-        "building": "Base/building/construction system with placement and customization",
+        "progression": "技能/经验/解锁成长体系",
+        "grindy acceptable": "令人满足的重复循环，带可见的增量奖励",
+        "creative": "用户生成内容或自由创作工具",
+        "sandbox": "开放式环境，支持涌现式玩法",
+        "building": "基地/建造/建造系统，支持放置和自定义",
 
         # Social patterns
-        "make friends": "In-game social features (chat, gifting, visiting)",
-        "random people": "Matchmaking with strangers; optional proximity voice/text chat",
-        "talk with": "Communication system (text chat, emotes, ping system)",
+        "make friends": "游戏内社交功能（聊天、送礼、拜访）",
+        "random people": "陌生人匹配；可选近距离语音/文字聊天",
+        "talk with": "通讯系统（文字聊天、表情、标记系统）",
 
         # Accessibility patterns
-        "beginner friendly": "Onboarding tutorial + difficulty scaling + hint system",
-        "accessible": "UI/UX designed for broad audience (large text, colorblind mode, remapping)",
+        "beginner friendly": "新手引导教程 + 难度分级 + 提示系统",
+        "accessible": "面向大众的 UI/UX 设计（大字体、色盲模式、按键重映射）",
 
         # Content patterns
-        "hidden gem factor": "Unique art style or unconventional setting that stands out",
-        "like X but": "Takes inspiration from [reference] but differentiates on [axis]",
-        "replayable": "Procedural generation or multiple narrative branches",
+        "hidden gem factor": "独特的美术风格或非常规设定，让人眼前一亮",
+        "like X but": "借鉴 [参考作品] 但在 [维度] 上做出差异化",
+        "replayable": "程序化生成或多条叙事分支",
     }
 
     def __init__(self, data_dir: str = "data/projects"):
@@ -219,15 +219,15 @@ class PMAgent:
         if best_match:
             return best_match
 
-        # Fallback: generate from the text itself
+        # Fallback: generate from the text itself (Chinese)
         if pain and desire:
-            return f"A system that addresses '{pain[:80]}' while delivering '{desire[:80]}'"
+            return f"解决「{pain[:80]}」痛点，同时满足「{desire[:80]}」诉求的功能系统"
         elif desire:
-            return f"A feature that provides: {desire[:120]}"
+            return f"提供以下体验：{desire[:120]}"
         elif pain:
-            return f"A solution to: {pain[:120]}"
+            return f"针对以下问题的解决方案：{pain[:120]}"
         else:
-            return f"Feature derived from player feedback: {quote[:100]}"
+            return f"基于玩家反馈衍生的功能：{quote[:100]}"
 
     def _calculate_intensity(self, sentiment: float, upvotes: int, text_length: int) -> float:
         """
@@ -241,22 +241,22 @@ class PMAgent:
         return sent_component + vote_component + length_component
 
     def _generate_notes(self, pain: str, desire: str, sentiment: float) -> str:
-        """Generate human-readable notes for each feature."""
+        """Generate human-readable notes for each feature (Chinese)."""
         parts = []
         if sentiment > 0.3:
-            parts.append("Positive sentiment — players express enthusiasm/want")
+            parts.append("正面情感 — 玩家表达了热情/期待")
         elif sentiment < -0.3:
-            parts.append("Negative sentiment — players express frustration/pain")
+            parts.append("负面情感 — 玩家表达了不满/痛点")
 
         if not pain or pain == "Unknown":
-            parts.append("Pure desire signal — no explicit pain point mentioned")
+            parts.append("纯诉求信号 — 未提及明确痛点")
         if not desire or desire == "Unknown":
-            parts.append("Pure pain signal — no explicit desire mentioned")
+            parts.append("纯痛点信号 — 未提及明确诉求")
 
-        return "; ".join(parts) if parts else "Standard feature request"
+        return "；".join(parts) if parts else "标准功能需求"
 
     def _generate_summary(self, backlog: list[FeatureItem], phase2_data: dict) -> str:
-        """Generate one-paragraph concept summary."""
+        """Generate one-paragraph concept summary (Chinese)."""
         p0_count = sum(1 for f in backlog if f.priority == "P0")
         p1_count = sum(1 for f in backlog if f.priority == "P1")
         total = len(backlog)
@@ -265,11 +265,11 @@ class PMAgent:
         top_desires = [f.game_mechanism for f in backlog[:3]]
 
         summary = (
-            f"A {niche_slug.replace('-', ' ')} game with "
-            f"{p0_count} core must-have features, "
-            f"{p1_count} key differentiators, "
-            f"and {total - p0_count - p1_count} enhancement features. "
-            f"Central pillars: {' | '.join(top_desires)}."
+            f"一款{niche_slug.replace('-', ' ')}游戏，"
+            f"包含 {p0_count} 项核心必备功能、"
+            f"{p1_count} 项关键差异化功能，"
+            f"以及 {total - p0_count - p1_count} 项增强功能。"
+            f"核心支柱：{' | '.join(top_desires)}。"
         )
         return summary
 
