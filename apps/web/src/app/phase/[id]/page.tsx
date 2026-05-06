@@ -1,9 +1,11 @@
 import DiscoveryPage from "@/features/discovery/page";
 import SentimentPage from "@/features/sentiment/page";
+import StructuringPage from "@/features/structuring/page";
 
 const PHASES: Record<number, { title: string; component: React.FC }> = {
   1: { title: "Phase 1: Niche Discovery", component: DiscoveryPage },
   2: { title: "Phase 2: Sentiment & Consensus", component: SentimentPage },
+  3: { title: "Phase 3: Data Structuring", component: StructuringPage },
 };
 
 export function generateMetadata({ params }: { params: { id: string } }) {

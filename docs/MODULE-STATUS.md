@@ -54,8 +54,8 @@
 | 字段 | 值 |
 |------|-----|
 | **模块ID** | `P2-SENTIMENT` |
-| **当前状态** | `NOT_STARTED` |
-| **当前版本** | `v0.0.0` |
+| **当前状态** | `STABLE` ✅ |
+| **当前版本** | `v0.1.0` |
 | **上一稳定版** | — |
 | **前端路径** | `apps/web/src/features/sentiment/` |
 | **后端路径** | `apps/api/routers/sentiment.py` → `services/reddit_analyst.py` → `crawlers/reddit_crawler.py` |
@@ -179,7 +179,7 @@
 |---|--------|----------|----------|----------|
 | M0 | 项目脚手架搭建完成 | API-CORE + WEB-CORE + SHARED-TYPES | ✅ STABLE | 2026-05-06 |
 | M1 | Phase 1 可用 | P1-DISCOVERY | ✅ STABLE | 2026-05-06 |
-| M2 | Phase 1+2 可用 | P1 + P2 | STABLE | — |
+| M2 | Phase 1+2 可用 | P1 + P2 | ✅ STABLE | 2026-05-06 |
 | M3 | 全流程可跑通 | P1-P4 | STABLE | — |
 | M4 | 国内数据源接入 | P1 + P2 爬虫扩展 | STABLE | — |
 | M5 | 移动端 PWA 优化 | WEB + 全部前端 | STABLE | — |
