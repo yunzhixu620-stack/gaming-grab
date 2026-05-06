@@ -1,212 +1,51 @@
 @import "tailwindcss";
+@import "../styles/design-system.css";
 
-/* Import 米游社 Design System */
-@import "../styles/mi-design-system.css";
+/* ── Page Layout ── */
 
-/* ── Tailwind Theme Extension ── */
-
-@theme {
-  --color-mi-primary: #4DA6FF;
-  --color-mi-primary-dark: #2B7CD3;
-  --color-mi-primary-light: #E8F4FF;
-  --color-mi-bg-page: #F5F7FA;
-  --color-mi-text-secondary: #666666;
-  --color-mi-text-tertiary: #999999;
-
-  --font-family-sans: -apple-system, BlinkMacSystemFont, "PingFang SC",
-    "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue",
-    Helvetica, Arial, sans-serif;
-}
-
-/* Global */
 body {
-  background: var(--mi-bg-page);
+  background: var(--c-bg);
 }
 
-/* ============================================
-   RESPONSIVE LAYOUT SYSTEM
-   Mobile: full-width, bottom nav, card feed
-   Desktop: max-width 1200px, sidebar nav, grid layout
-   ============================================ */
+/* Main content area: top padding to clear fixed navbar */
+.main-content {
+  padding-top: calc(var(--space-3xl) + 58px); /* 58px = navbar height */
+  min-height: 100vh;
+}
 
-/* ── Mobile (< 768px): Native app feel ── */
+/* ── Responsive Breakpoints ── */
+
+/* Tablet & Desktop */
+@media (min-width: 768px) {
+  .main-content {
+    padding-top: calc(var(--space-xl) + 58px);
+  }
+  
+  .layout-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 280px;
+    gap: var(--space-xl);
+  }
+
+  .mobile-only { display: none !important; }
+  .desktop-only { display: flex !important; }
+}
+
+/* Mobile */
 @media (max-width: 767px) {
-  .mi-layout {
-    width: 100%;
-    min-height: 100dvh;
-    position: relative;
-  }
-
-  /* Bottom nav visible on mobile only */
-  .mi-bottom-nav { display: flex; }
-  .mi-sidebar { display: none; }
-
-  /* Full-width content */
-  .mi-content { width: 100%; padding: 0; }
-}
-
-/* ── Desktop (>= 768px): Full-featured layout ── */
-@media (min-width: 768px) {
-  .mi-layout {
-    max-width: 1200px;
-    margin: 0 auto;
-    min-height: 100vh;
-    display: flex;
-    position: relative;
-  }
-
-  /* Hide bottom nav on desktop */
-  .mi-bottom-nav { display: none !important; }
-
-  /* Show sidebar */
-  .mi-sidebar {
-    display: flex;
-    width: 240px;
-    flex-shrink: 0;
-    background: var(--mi-bg-card);
-    border-right: 1px solid var(--mi-border-light);
+  .layout-grid {
+    display: flex !important;
     flex-direction: column;
-    position: sticky;
-    top: 0;
-    height: 100dvh;
-    overflow-y: auto;
-    z-index: 50;
+    gap: var(--space-lg);
   }
 
-  /* Main content area */
-  .mi-content {
-    flex: 1;
-    min-width: 0;
-    padding: 24px 32px;
-    max-width: 880px;
+  .mobile-only { display: flex !important; }
+  .desktop-only { display: none !important; }
+
+  .navbar-links { 
+    display: none; /* Hide nav links on mobile, use bottom nav instead */ 
   }
 
-  /* Safe bottom: no bottom nav on desktop */
-  .mi-safe-bottom { padding-bottom: 0; }
-}
-
-/* ── Sidebar Navigation (Desktop) ── */
-.mi-sidebar-header {
-  padding: 20px 20px 16px;
-  border-bottom: 1px solid var(--mi-border-light);
-}
-
-.mi-sidebar-header h1 {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--mi-text-primary);
-  letter-spacing: -0.3px;
-}
-
-.mi-sidebar-header p {
-  font-size: 11px;
-  color: var(--mi-text-tertiary);
-  margin-top: 2px;
-}
-
-.mi-nav-section {
-  padding: 12px 0;
-}
-
-.mi-nav-label {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--mi-text-tertiary);
-  padding: 8px 20px 4px;
-}
-
-.mi-nav-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 20px;
-  font-size: 14px;
-  color: var(--mi-text-secondary);
-  text-decoration: none;
-  transition: all 150ms ease;
-  border-left: 3px solid transparent;
-}
-
-.mi-nav-link:hover {
-  background: var(--mi-primary-light);
-  color: var(--mi-primary);
-}
-
-.mi-nav-link.active {
-  background: var(--mi-primary-light);
-  color: var(--mi-primary);
-  border-left-color: var(--mi-primary);
-  font-weight: 600;
-}
-
-.mi-nav-link .nav-icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  opacity: 0.7;
-}
-
-.mi-nav-link.active .nav-icon,
-.mi-nav-link:hover .nav-icon {
-  opacity: 1;
-}
-
-.mi-nav-link .nav-label {
-  white-space: nowrap;
-}
-
-/* Sidebar footer */
-.mi-sidebar-footer {
-  margin-top: auto;
-  padding: 16px 20px;
-  border-top: 1px solid var(--mi-border-light);
-}
-
-/* ── Desktop Header Bar ── */
-@media (min-width: 768px) {
-  .mi-page-header {
-    display: flex;
-    items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--mi-border-light);
-  }
-
-  .mi-page-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--mi-text-primary);
-  }
-
-  .mi-page-subtitle {
-    font-size: 13px;
-    color: var(--mi-text-secondary);
-    margin-top: 2px;
-  }
-}
-
-/* ── Desktop Card Grid ── */
-@media (min-width: 768px) {
-  .mi-grid-2 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-
-  .mi-grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-  }
-}
-
-@media (max-width: 767px) {
-  .mi-grid-2, .mi-grid-3 {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
+  .card-body { padding: var(--space-lg); }
+  .card-body-lg { padding: var(--space-xl); }
 }

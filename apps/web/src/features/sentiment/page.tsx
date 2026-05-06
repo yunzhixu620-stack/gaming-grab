@@ -25,9 +25,9 @@ interface AnalysisResult {
 }
 
 const SENTIMENT_MAP: Record<string, { label: string; color: string; bg: string }> = {
-  positive: { label: "正面", color: "#52C41A", bg: "#F0FFF4" },
-  negative: { label: "负面", color: "#FF4D4F", bg: "#FFF2F0" },
-  neutral: { label: "中性", color: "#999999", bg: "#FAFAFA" },
+  positive: { label: "正面", color: "#34C759", bg: "#E8FBEE" },
+  negative: { label: "负面", color: "#FF453A", bg: "#FFEFEC" },
+  neutral: { label: "中性", color: "#8E8E93", bg: "#F2F2F7" },
 };
 
 export default function SentimentPage() {
@@ -61,98 +61,112 @@ export default function SentimentPage() {
   }, []);
 
   return (
-    <div className="mi-scroll-area mi-safe-bottom">
-      <header className="mi-header pb-16">
-        <div className="flex items-center gap-3 mb-1">
-          <button onClick={() => router.back()} className="text-white/80 p-1 -ml-1">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><polyline points="15 18 9 12 15 6" /></svg>
-          </button>
-          <h1 className="mi-header-title">第2阶段：情感与共识</h1>
-        </div>
-        <p className="mi-header-subtitle ml-9">提取玩家痛点、诉求和共识点</p>
-      </header>
+    <div className="layout-single">
+      {/* Page Header */}
+      <div className="mb-xl">
+        <button onClick={() => router.back()} className="btn-ghost mb-md" style={{ fontSize: "var(--text-sm)" }}>
+          ← 返回
+        </button>
+        <h1 style={{ fontSize: "var(--text-2xl)", fontWeight: 800, letterSpacing: "-0.5px", marginBottom: "var(--space-xs)" }}>
+          第2阶段：情感与共识分析
+        </h1>
+        <p style={{ fontSize: "var(--text-base)", color: "var(--c-text-secondary)" }}>
+          提取玩家痛点、诉求和共识点
+        </p>
+      </div>
 
-      <main className="px-4 -mt-10 relative z-10 space-y-3 pb-8">
-        {/* 加载状态 */}
-        {loading && (
-          <div className="mi-card p-10 text-center">
-            <div className="inline-block animate-spin rounded-full h-7 w-7 border-b-2 border-blue-500 mb-3" />
-            <p className="text-[13px] text-gray-500">正在分析玩家情感...</p>
+      {/* Loading */}
+      {loading && (
+        <div className="card card-body-lg text-center mb-xl">
+          <div className="flex justify-center mb-md">
+            <div className="w-10 h-10 rounded-full border-3 border-blue-200 border-t-blue-500 animate-spin" />
           </div>
-        )}
+          <p style={{ fontSize: "var(--text-sm)", color: "var(--c-text-secondary)" }}>正在分析玩家情感...</p>
+        </div>
+      )}
 
-        {/* 错误提示 */}
-        {error && (
-          <div className="bg-red-50 border border-red-100 rounded-xl p-3.5 text-red-500 text-[13px]">{error}</div>
-        )}
+      {/* Error */}
+      {error && (
+        <div className="card mb-xl" style={{ borderColor: "var(--c-error)", background: "var(--c-error-light)" }}>
+          <div className="card-body flex items-center gap-3">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--c-error)" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+            <p style={{ fontSize: "var(--text-sm)", color: "var(--c-error)" }}>{error}</p>
+          </div>
+        </div>
+      )}
 
-        {/* 分析结果 */}
-        {result && result.status === "ok" && (
-          <>
-            {/* 概览卡片 */}
-            <div className="mi-card p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="font-semibold text-[15px] text-gray-900">{result.niche_name || "品类分析"}</h2>
-                <span
-                  className="text-[11px] font-medium px-2.5 py-1 rounded-full"
-                  style={{
-                    background: (SENTIMENT_MAP[result.overall_sentiment]?.bg || "#f5f5f5"),
-                    color: SENTIMENT_MAP[result.overall_sentiment]?.color || "#666",
-                  }}
-                >
-                  整体{SENTIMENT_MAP[result.overall_sentiment]?.label || "中性"}
-                </span>
-              </div>
-              <p className="text-[12px] text-gray-400">分析了 {result.total_posts_analyzed} 条帖子 · {result.consensus_points.length} 个共识点</p>
+      {/* Results */}
+      {result && result.status === "ok" && (
+        <>
+          {/* Overview Card */}
+          <div className="card card-body mb-xl flex items-center justify-between">
+            <div>
+              <h2 style={{ fontSize: "var(--text-lg)", fontWeight: 700 }}>{result.niche_name || "品类分析"}</h2>
+              <p style={{ fontSize: "var(--text-sm)", color: "var(--c-text-tertiary)", marginTop: 2 }}>
+                分析了 {result.total_posts_analyzed} 条帖子 · {result.consensus_points.length} 个共识点
+              </p>
             </div>
+            <span className="badge badge-success" style={{
+              background: (SENTIMENT_MAP[result.overall_sentiment]?.bg || "#f5f5f5"),
+              color: SENTIMENT_MAP[result.overall_sentiment]?.color || "#666",
+            }}>
+              整体{SENTIMENT_MAP[result.overall_sentiment]?.label || "中性"}
+            </span>
+          </div>
 
-            {/* 共识点列表 */}
+          {/* Consensus Points */}
+          <div className="space-y-lg mb-xl">
             {result.consensus_points.map((point) => {
               const sent = SENTIMENT_MAP[point.sentiment] || SENTIMENT_MAP.neutral;
               return (
-                <div key={point.id} className="mi-card overflow-hidden">
-                  {/* 顶部色条 */}
-                  <div className="h-1" style={{ background: sent.color }} />
-                  <div className="p-4 space-y-3">
-                    {/* 标题 + 强度 */}
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-semibold text-[14px] text-gray-900 leading-snug">{point.summary}</h3>
-                      <span className="text-[11px] font-medium px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5"
-                        style={{ background: sent.bg, color: sent.color }}>
+                <div key={point.id} className="card" style={{ overflow: "hidden" }}>
+                  {/* Top accent bar */}
+                  <div style={{ height: 3, background: sent.color }} />
+                  <div className="card-body space-y-md">
+                    {/* Title + Badge */}
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 style={{ fontSize: "var(--text-base)", fontWeight: 600, lineHeight: "var(--lh-tight)" }}>
+                        {point.summary}
+                      </h3>
+                      <span className="tag" style={{ background: sent.bg, color: sent.color, flexShrink: 0, marginTop: 2 }}>
                         {sent.label}
                       </span>
                     </div>
 
-                    {/* 痛点 */}
+                    {/* Pain points */}
                     {point.pain_points.length > 0 && (
-                      <div className="space-y-1.5">
-                        <p className="text-[11px] text-red-500 font-medium flex items-center gap-1">
-                          <span className="w-1 h-1 rounded-full bg-red-400" /> 玩家痛点
-                        </p>
+                      <div className="pl-3" style={{ borderLeft: "2px solid #FFCDD2" }}>
+                        <p style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "#D32F2F", marginBottom: "var(--space-xs)" }}>玩家痛点</p>
                         {point.pain_points.map((pp) => (
-                          <p key={pp} className="text-[12px] text-gray-600 pl-3 leading-relaxed">{pp}</p>
+                          <p key={pp} style={{ fontSize: "var(--text-sm)", color: "var(--c-text-secondary)", lineHeight: "var(--lh-normal)", marginBottom: "var(--space-xs)" }}>{pp}</p>
                         ))}
                       </div>
                     )}
 
-                    {/* 诉求 */}
+                    {/* Desires */}
                     {point.desires.length > 0 && (
-                      <div className="space-y-1.5">
-                        <p className="text-[11px] text-blue-500 font-medium flex items-center gap-1">
-                          <span className="w-1 h-1 rounded-full bg-blue-400" /> 玩家诉求
-                        </p>
+                      <div className="pl-3" style={{ borderLeft: "2px solid #BBDEFB" }}>
+                        <p style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "#1976D2", marginBottom: "var(--space-xs)" }}>玩家诉求</p>
                         {point.desires.map((d) => (
-                          <p key={d} className="text-[12px] text-gray-600 pl-3 leading-relaxed">{d}</p>
+                          <p key={d} style={{ fontSize: "var(--text-sm)", color: "var(--c-text-secondary)", lineHeight: "var(--lh-normal)", marginBottom: "var(--space-xs)" }}>{d}</p>
                         ))}
                       </div>
                     )}
 
-                    {/* 原文引用 */}
+                    {/* Quote */}
                     {point.source_quote && (
-                      <blockquote className="border-l-2 border-gray-200 pl-3 py-1 bg-gray-50 rounded-r-lg">
-                        <p className="text-[12px] text-gray-500 italic leading-relaxed">&ldquo;{point.source_quote}&rdquo;</p>
+                      <blockquote style={{
+                        padding: "var(--space-md) var(--space-lg)",
+                        background: "var(--c-bg)",
+                        borderRadius: 8,
+                        borderLeft: "3px solid var(--c-border)",
+                      }}>
+                        <p style={{ fontSize: "var(--text-sm)", color: "var(--c-text-secondary)", fontStyle: "italic", lineHeight: "var(--lh-relaxed)" }}>
+                          &ldquo;{point.source_quote}&rdquo;
+                        </p>
                         {point.source_url && (
-                          <a href={point.source_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-400 hover:text-blue-300 mt-1 inline-block break-all">
+                          <a href={point.source_url} target="_blank" rel="noopener noreferrer"
+                            style={{ fontSize: "var(--text-xs)", color: "var(--c-blue)", textDecoration: "none", marginTop: "var(--space-xs)", display: "inline-block" }}>
                             查看原文 →
                           </a>
                         )}
@@ -162,17 +176,16 @@ export default function SentimentPage() {
                 </div>
               );
             })}
+          </div>
 
-            {/* 下一步按钮 */}
-            <button
-              onClick={() => router.push(`/phase/3?project_id=${projectId}`)}
-              className="w-full mi-btn mi-btn-primary py-3 text-[14px]"
-            >
+          {/* Next Step CTA */}
+          <div className="text-center">
+            <button onClick={() => router.push(`/phase/3?project_id=${projectId}`)} className="btn-primary btn-lg">
               进入第3阶段：需求结构化 →
             </button>
-          </>
-        )}
-      </main>
+          </div>
+        </>
+      )}
     </div>
   );
 }
