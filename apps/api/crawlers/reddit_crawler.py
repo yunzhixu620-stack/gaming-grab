@@ -91,7 +91,12 @@ class RedditCrawler:
             return posts
 
         except Exception as e:
-            print(f"[RedditCrawler] Error searching r/{subreddit}: {e}")
+            # Log detailed error for debugging
+            err_detail = str(e)
+            if hasattr(e, 'response'):
+                resp_obj = e.response  # type: ignore
+                err_detail = f"HTTP {resp_obj.status_code}: {err_detail[:100]}"
+            print(f"[RedditCrawler] Error searching r/{subreddit}: {err_detail}")
             return []
 
     async def get_post_comments(

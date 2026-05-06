@@ -84,6 +84,13 @@ class TaptapCrawler(DomesticCrawler):
                 "type": "app",  # Search for apps/games
             }
             resp = await self.client.get(url, params=params)
+
+            # Check content type before JSON parse
+            content_type = resp.headers.get("content-type", "")
+            if "json" not in content_type:
+                print(f"[TaptapCrawler] Non-JSON response (content-type: {content_type}, status: {resp.status_code})")
+                return []
+
             data = resp.json()
 
             items = data.get("data", {}).get("list", [])
@@ -182,6 +189,13 @@ class XiaohongshuCrawler(DomesticCrawler):
                 "note_type": 0,
             }
             resp = await self.client.get(url, params=params)
+
+            # Check content type before JSON parse
+            content_type = resp.headers.get("content-type", "")
+            if "json" not in content_type:
+                print(f"[XiaohongshuCrawler] Non-JSON response (content-type: {content_type}, status: {resp.status_code})")
+                return []
+
             data = resp.json()
 
             items = data.get("data", {}).get("items", [])
@@ -287,6 +301,13 @@ class BilibiliCrawler(DomesticCrawler):
                 "order": "totalrank",
             }
             resp = await self.client.get(url, params=params)
+
+            # Check content type before JSON parse
+            content_type = resp.headers.get("content-type", "")
+            if "json" not in content_type:
+                print(f"[BilibiliCrawler] Non-JSON response (content-type: {content_type}, status: {resp.status_code})")
+                return []
+
             data = resp.json()
 
             items = data.get("data", {}).get("result", []) or []
