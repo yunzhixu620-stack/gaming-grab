@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 
 interface NicheCandidate {
   id: string;
@@ -39,7 +40,7 @@ export default function DiscoveryPage() {
     if (!query.trim()) return;
     setLoading(true); setError(""); setResults(null);
     try {
-      const res = await fetch("/api/v1/discovery/niches/search", {
+      const res = await apiFetch("/api/v1/discovery/niches/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query, sources }),

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiFetch } from "@/lib/api";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface FeatureItem {
@@ -45,7 +46,7 @@ export default function StructuringPage() {
     if (!projectId) { setError("缺少项目 ID"); return; }
     setLoading(true); setError(""); setResult(null);
     try {
-      const res = await fetch("/api/v1/structuring/structure", {
+      const res = await apiFetch("/api/v1/structuring/structure", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ project_id: projectId }),

@@ -1,0 +1,51 @@
+# Alibaba Cloud FC (Function Compute) — Backend Deployment Guide
+#
+# Prerequisites:
+# 1. Install aliyun CLI: npm install -g @alicloud/fun
+#    or: pip install fun
+# 2. Configure: aliyun configure
+# 3. This template deploys FastAPI as a HTTP function
+
+# ── Option A: Use fun (recommended) ──
+# Run in apps/api/ directory:
+#   fun deploy -y
+#
+# ── Option B: Use sctl + FC console ──
+# 1. Build Docker image locally:
+#    docker build -t gaming-pm-api:latest .
+# 2. Push to ACR (Alibaba Container Registry):
+#    docker tag gaming-pm-api:latest <your-acr-registry>.cn-shanghai/gaming-pm-api:latest
+#    docker push <your-acr-registry>.cn-shanghai/gaming-pm-api:latest
+# 3. Create FC function in console pointing to this image
+
+templateVersion: '1.0'
+
+services:
+  gaming-pm-api:
+    component: devsapp/fc
+    props:
+      region: cn-shanghai
+      service:
+        name: gaming-pm-agent
+        description: "Gaming PM Agent API Backend"
+      function:
+        name: api
+        description: "FastAPI backend"
+        runtime: python3.12
+        codeUri: ./
+        handler: main.app
+        memorySize: 512
+        timeout: 30
+        instanceConcurrency: 10
+        customDomainConfig:
+          domainName: auto
+          protocol: HTTP
+          routes:
+            - path: /*
+              functionName: api
+      customDomains:
+        - domainName: auto
+          protocol: HTTP
+          routeConfigs:
+            - path: /*
+              functionName: api
