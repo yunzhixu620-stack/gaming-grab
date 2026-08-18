@@ -5,7 +5,7 @@ import Link from "next/link";
 const PHASES = [
   {
     id: 1, title: "品类发现", subtitle: "从玩家社区挖掘未被满足的细分游戏需求",
-    desc: "Google 自动补全 · Reddit 公开 API · TapTap · 小红书 · B站",
+    desc: "Reddit 公开数据已接入 · 国内平台仍为实验采集与回退数据",
     icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>,
     color: "#4DA6FF", bg: "#F0F7FF", route: "/phase/1",
   },
@@ -66,8 +66,8 @@ export default function HomePage() {
             {/* Stats pills */}
             <div className="flex justify-center gap-3 flex-wrap mt-xl">
               {[
-                { label: "4 个阶段", value: "完整流程" },
-                { label: "5 大数据源", value: "Reddit + 国内平台" },
+                { label: "MVP", value: "4 阶段流程" },
+                { label: "真实数据", value: "Reddit 已接入" },
                 { label: "VADER 引擎", value: "情感分析" },
                 { label: "P0-P3 分级", value: "优先级排序" },
               ].map((stat) => (
@@ -80,6 +80,17 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-2xl">
+        <div className="card card-body" style={{ borderColor: "#E8B930", background: "#FFFBE6" }}>
+          <div className="flex items-start gap-3">
+            <span className="tag tag-gold" style={{ flexShrink: 0 }}>MVP 边界</span>
+            <p style={{ fontSize: "13px", color: "var(--c-text-secondary)", lineHeight: "var(--lh-relaxed)" }}>
+              在线页面依赖独立 FastAPI 服务。Reddit 为当前主要真实社区数据源；TapTap、小红书和 B 站采集仍处于实验阶段，服务不可用时产生的回退内容不代表真实市场结论。进入各阶段后，页面会明确显示连接失败，不会把失败结果标记为完成。
+            </p>
           </div>
         </div>
       </section>
@@ -111,7 +122,7 @@ export default function HomePage() {
                         <h3 style={{ fontSize: "15px", fontWeight: 700, color: "var(--c-text)" }}>
                           第{phase.id}阶段：{phase.title}
                         </h3>
-                        <span className="tag tag-gold" style={{ fontSize: "10px", padding: "2px 8px" }}>就绪</span>
+                        <span className="tag tag-gold" style={{ fontSize: "10px", padding: "2px 8px" }}>MVP</span>
                       </div>
                       <p style={{ fontSize: "13px", color: "var(--c-text-secondary)", lineHeight: "var(--lh-normal)" }}>
                         {phase.subtitle}
